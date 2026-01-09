@@ -5,3 +5,7 @@ INSERT INTO users (
     ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?
 )
 RETURNING *;
+
+-- name: GetUserByEmail :one
+SELECT * FROM users
+WHERE email = ? LIMIT 1;

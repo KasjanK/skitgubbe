@@ -37,10 +37,20 @@ func main() {
 		db:	dbQueries,
 	}
 
+	/* TODO: 
+		Parse form/JSON for email + password.
+		Check if a user with that email already exists (or catch the unique‑constraint error).
+		Hash the password with bcrypt.
+		Generate a UUID.
+		Call CreateUser.
+		Create a session + cookie and redirect to your “logged in” page.
+	*/
+
 	mux := http.NewServeMux()
 	mux.Handle("/", http.FileServer(http.Dir(filepathRoot)))
-	// TODO:
-	// mux.HandleFunc("POST /api/login", cfg.handlerLogin)
+	
+	mux.HandleFunc("POST /api/login", cfg.handlerLogin)
+	mux.HandleFunc("POST /api/signup", cfg.handlerSignup)
 
 	srv := &http.Server{
 		Addr:    ":" + port,
