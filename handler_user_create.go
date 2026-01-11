@@ -61,5 +61,11 @@ func (cfg *apiConfig) handlerSignup(w http.ResponseWriter, r *http.Request) {
 			Email: params.Email,
 		},
 	})
+}
 
+func (cfg *apiConfig) handlerSignupPage(w http.ResponseWriter, r *http.Request) {
+	if err := cfg.templates.ExecuteTemplate(w, "signup.html", nil); err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Could not execute signup template", err)
+		return
+	}
 }

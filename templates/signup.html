@@ -3,24 +3,24 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Login</title>
-        <link rel="stylesheet" href="/static/css/style.css" />
+        <title>Sign Up</title>
+        <link rel="stylesheet" href="static/css/style.css" />
     </head>
     <body>
         <div class="auth-container">
-            <h2>Welcome Back</h2>
-            <p class="subtitle">Please sign in to your account</p>
+            <h2>Create Account</h2>
+            <p class="subtitle">Sign up to get started</p>
 
             <form id="auth-form" class="auth-form">
-                <input type="email" name="email" id="email"required />
-                <input type="password" name="password" id="password" required />
+                <input type="email" placeholder="Email" id="email" required />
+                <input type="password" placeholder="Password" id="password" required />
 
-                <button type="submit">Log in</button>
-                <div id="error" style="color:red;"></div>
+                <button type="submit">Sign Up</button>
             </form>
+
             <p class="switch">
-            Don’t have an account?
-            <a href="/signup">Sign up</a>
+            Already have an account?
+            <a href="login.html">Login</a>
             </p>
         </div>
         <script>
@@ -30,19 +30,19 @@
                 const email = document.getElementById('email').value;
                 const password = document.getElementById('password').value;
 
-                const res = await fetch('/api/login', {
+                const res = await fetch('/api/signup', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ email, password }),
                 });
 
                 if (res.ok) {
-                    window.location = '/dashboard';
+                    window.location = '/login';
                     return;
                 }
 
                 const data = await res.json().catch(() => ({}));
-                document.getElementById('error').textContent = data.error || 'Login failed';
+                document.getElementById('error').textContent = data.error || 'Signup failed';
             });
         </script>
     </body>

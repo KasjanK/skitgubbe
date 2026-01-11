@@ -44,18 +44,21 @@ func main() {
 		templates: *template,
 	}
 
-	/* TODO: 
-		Create a session + cookie and redirect to your “logged in” page.
-	*/
-
 	mux := http.NewServeMux()
 	mux.Handle("/", http.FileServer(http.Dir(filepathRoot)))
+
+	mux.Handle("/static/",
+		http.StripPrefix("/static/",
+		http.FileServer(http.Dir("static")),
+		),
+	)
 	
 	mux.HandleFunc("POST /api/login", cfg.handlerLogin)
 	mux.HandleFunc("POST /api/signup", cfg.handlerSignup)
 
 	mux.HandleFunc("GET /dashboard", cfg.handlerDashboard)
 	mux.HandleFunc("GET /login", cfg.handlerLoginPage)
+	mux.HandleFunc("GET /signup", cfg.handlerSignupPage)
 
 	srv := &http.Server{
 		Addr:    ":" + port,
