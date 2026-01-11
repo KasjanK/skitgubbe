@@ -82,3 +82,10 @@ func (cfg *apiConfig) currentUser(r *http.Request) (*database.User, error) {
 
 	return &user, nil
 }
+
+func (cfg *apiConfig) handlerLoginPage(w http.ResponseWriter, r* http.Request) {
+	if err := cfg.templates.ExecuteTemplate(w, "login.html", nil); err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Could not execute login template", err)
+		return
+	}
+}

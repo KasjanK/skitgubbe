@@ -55,6 +55,7 @@ func main() {
 	mux.HandleFunc("POST /api/signup", cfg.handlerSignup)
 
 	mux.HandleFunc("GET /dashboard", cfg.handlerDashboard)
+	mux.HandleFunc("GET /login", cfg.handlerLoginPage)
 
 	srv := &http.Server{
 		Addr:    ":" + port,
