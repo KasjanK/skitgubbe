@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -12,7 +13,9 @@ import (
 )
 
 type apiConfig struct {
-	db 	*database.Queries
+	db 	      *database.Queries
+	sessions  map[string]string // sessionID -> userID
+	templates template.Template
 }
 
 func main() {
@@ -33,16 +36,15 @@ func main() {
 
 	dbQueries := database.New(db)
 
-	cfg := apiConfig{
-		db:	dbQueries,
+	template := template.Must(template.ParseGlob("templates/*.html"))
+
+	cfg := &apiConfig{
+		db:	       dbQueries,
+		sessions:  make(map[string]string),
+		templates: *template,
 	}
 
 	/* TODO: 
-		Parse form/JSON for email + password.
-		Check if a user with that email already exists (or catch the unique‑constraint error).
-		Hash the password with bcrypt.
-		Generate a UUID.
-		Call CreateUser.
 		Create a session + cookie and redirect to your “logged in” page.
 	*/
 
@@ -51,6 +53,8 @@ func main() {
 	
 	mux.HandleFunc("POST /api/login", cfg.handlerLogin)
 	mux.HandleFunc("POST /api/signup", cfg.handlerSignup)
+
+	mux.HandleFunc("GET /dashboard", cfg.handlerDashboard)
 
 	srv := &http.Server{
 		Addr:    ":" + port,
