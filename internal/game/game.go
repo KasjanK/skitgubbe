@@ -25,6 +25,28 @@ const (
 	RankK     Rank = 13
 	RankA     Rank = 14
 )
+var AllSuits = []Suit{
+    SuitClubs,
+    SuitDiamonds,
+    SuitHearts,
+    SuitSpades,
+}
+
+var AllRanks = []Rank{
+	RankTwo,
+    RankThree,
+    RankFour,
+    RankFive,
+    RankSix,
+    RankSeven,
+    RankEight,
+    RankNine,
+    RankTen,
+    RankJ,
+    RankQ,
+    RankK,
+    RankA,
+}
 
 type Card struct {
 	Rank Rank `json:"rank"`

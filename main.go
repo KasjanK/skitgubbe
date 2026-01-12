@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/Kasjank/skitgubbe/internal/database"
+	"github.com/Kasjank/skitgubbe/internal/game"
 	"github.com/joho/godotenv"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -15,6 +16,7 @@ import (
 type apiConfig struct {
 	db 	      *database.Queries
 	sessions  map[string]string // sessionID -> userID
+	games     map[string]*game.GameState
 	templates template.Template
 }
 
@@ -42,6 +44,7 @@ func main() {
 		db:	       dbQueries,
 		sessions:  make(map[string]string),
 		templates: *template,
+		games: 	   make(map[string]*game.GameState),
 	}
 
 	mux := http.NewServeMux()
@@ -67,7 +70,7 @@ func main() {
 
 	log.Printf("Serving files from %s on port: %s\n", filepathRoot, port)
 	log.Fatal(srv.ListenAndServe())
-	
+
 	defer db.Close()
 }
 
