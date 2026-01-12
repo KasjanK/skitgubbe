@@ -1,8 +1,48 @@
-<!doctype html>
-<html>
-<head><title>Dashboard</title></head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game Dashboard</title>
+  <link rel="stylesheet" href="/static/css/dashboard.css" />
+</head>
 <body>
-  <h1>Welcome, {{ .User.Email }}</h1>
-  <!-- rest of your logged-in UI -->
+
+  <header class="topbar">
+    <h1>Card Arena</h1>
+    <div class="user">
+      <span class="username">PlayerOne</span>
+      <img src="https://via.placeholder.com/36" alt="avatar" />
+    </div>
+  </header>
+
+  <main class="dashboard">
+    <!-- Find Match -->
+    <section class="card highlight">
+      <h2>Find a Match</h2>
+      <p>Jump into a ranked or casual game.</p>
+      <button class="primary">Find Match</button>
+    </section>
+
+    <!-- Profile -->
+    <section class="card">
+      <h2>Profile</h2>
+      <p>View and edit your player profile.</p>
+      <button>View Profile</button>
+    </section>
+
+    <!-- Stats -->
+    <section class="card">
+      <h2>Stats</h2>
+      <ul class="stats">
+        <li><span>Games Played</span><strong>124</strong></li>
+        <li><span>Wins</span><strong>78</strong></li>
+        <li><span>Win Rate</span><strong>63%</strong></li>
+        <li><span>Rank</span><strong>Gold II</strong></li>
+      </ul>
+    </section>
+  </main>
+
 </body>
 </html>
+
