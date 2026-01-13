@@ -66,5 +66,6 @@ type GameState struct {
 	ID 			  string		`json:"id"`
 	Players 	  []PlayerState `json:"players"`
 	CurrentPlayer PlayerID		`json:"current_player"`
+	Deck 		  []Card 		`json:"deck"`
 	Pile 		  []Card		`json:"pile"`
 }
