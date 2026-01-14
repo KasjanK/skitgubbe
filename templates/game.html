@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Skitgubbe</title>
+  <link rel="stylesheet" href="/game.css" />
+</head>
+<body>
+    <p>Game ID: <span id="game-id"></p>
+    <script>
+        const pathParts = window.location.pathname.split('/'); // ["", "game", "{id}"]
+        const gameId = pathParts[2];
+        document.getElementById('game-id').textContent = gameId;
+    </script>
+</body>

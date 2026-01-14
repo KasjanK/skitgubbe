@@ -16,12 +16,12 @@
     </div>
   </header>
 
-  <main class="dashboard">
+  <main class="dashboard" id="dashboard">
     <!-- Find Match -->
     <section class="card highlight">
       <h2>Find a Match</h2>
       <p>Jump into a ranked or casual game.</p>
-      <button class="primary">Find Match</button>
+      <button id="primary" class="primary">Find Match</button>
     </section>
 
     <!-- Profile -->
@@ -42,7 +42,24 @@
       </ul>
     </section>
   </main>
+<script>
+    document.getElementById('primary').addEventListener('click', async (e) => {
+        e.preventDefault();
 
+        const res = await fetch('/api/games', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+        });
+
+        if (!res.ok) {
+            alert('Failed to create game');
+            return;
+        };
+
+        const data = await res.json(); // { id: "..." }
+        window.location = '/game/' + data.id;
+    });
+</script>
 </body>
 </html>
 

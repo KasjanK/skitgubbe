@@ -40,10 +40,6 @@ func (cfg apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//	 TODO:
-	//		Generate a random sessionID.
-	//		Store sessionID -> userID in a map or DB table.
-	//		Set a cookie:
 	sessionID := uuid.New()
 	cfg.sessions[sessionID.String()] = user.ID
 
@@ -83,7 +79,7 @@ func (cfg *apiConfig) currentUser(r *http.Request) (*database.User, error) {
 	return &user, nil
 }
 
-func (cfg *apiConfig) handlerLoginPage(w http.ResponseWriter, r* http.Request) {
+func (cfg *apiConfig) handlerLoginPage(w http.ResponseWriter, r *http.Request) {
 	if err := cfg.templates.ExecuteTemplate(w, "login.html", nil); err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Could not execute login template", err)
 		return

@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -57,12 +56,20 @@ func main() {
 		),
 	)
 	
+	//TODO:
+	//POST /api/games/{id}/join  → add logged‑in user to game.
+	//GET  /api/games/{id}/state → return view of game state for the current user.
+	//POST /api/games/{id}/move  → apply a move.
+
 	mux.HandleFunc("POST /api/login", cfg.handlerLogin)
 	mux.HandleFunc("POST /api/signup", cfg.handlerSignup)
+	mux.HandleFunc("POST /api/games", cfg.handlerCreateGame)
+	
 
 	mux.HandleFunc("GET /dashboard", cfg.handlerDashboard)
 	mux.HandleFunc("GET /login", cfg.handlerLoginPage)
 	mux.HandleFunc("GET /signup", cfg.handlerSignupPage)
+	mux.HandleFunc("GET /game/{id}", cfg.handlerGamePage)
 
 	srv := &http.Server{
 		Addr:    ":" + port,
