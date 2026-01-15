@@ -32,8 +32,6 @@ func (cfg *apiConfig) handlerCreateGame(w http.ResponseWriter, r *http.Request) 
 }
 
 func (cfg *apiConfig) handlerGamePage(w http.ResponseWriter, r *http.Request) {
-	//TODO:
-	// Only allow players that are connected to the match
 	user, err := cfg.currentUser(r)
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)

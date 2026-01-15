@@ -19,9 +19,16 @@
   <main class="dashboard" id="dashboard">
     <!-- Find Match -->
     <section class="card highlight">
-      <h2>Find a Match</h2>
+      <h2>Create a Match</h2>
       <p>Jump into a ranked or casual game.</p>
       <button id="primary" class="primary">Find Match</button>
+    </section>
+    
+    <!-- Join Match -->
+    <section class="card">
+        <h2>Join a Match</h2>
+        <p>Enter a match ID to join an existing game.</p>
+        <button onclick="openJoinModal()">Join Match</button>
     </section>
 
     <!-- Profile -->
@@ -42,6 +49,29 @@
       </ul>
     </section>
   </main>
+
+  <!-- Join Match Modal -->
+<div id="joinModal" class="modal hidden">
+  <div class="modal-content">
+    <h3>Join Match</h3>
+    <p>Enter the match ID provided by the host.</p>
+
+    <input
+      type="text"
+      placeholder="Match ID"
+      id="game_id"
+    />
+
+    <div class="modal-actions">
+      <button onclick="closeJoinModal()">Cancel</button>
+      <button id="secondary" class="primary">Join</button>
+    </div>
+  </div>
+</div>
+
+<script>
+</script>
+
 <script>
     document.getElementById('primary').addEventListener('click', async (e) => {
         e.preventDefault();
@@ -57,6 +87,35 @@
         };
 
         const data = await res.json(); // { id: "..." }
+        window.location = '/game/' + data.id;
+    });
+    function openJoinModal() {
+        document.getElementById("joinModal").classList.remove("hidden");
+    }
+
+    function closeJoinModal() {
+        document.getElementById("joinModal").classList.add("hidden");
+    }
+
+
+    document.getElementById('secondary').addEventListener('click', async (e) => {
+        e.preventDefault();
+
+        const gameIdInput = document.getElementById('game_id');
+        const gameID = gameIdInput.value.trim();
+
+        const res = await fetch('/api/games/' + gameID + '/join', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ game_id: gameID }),
+        });
+
+        if (!res.ok) {
+            alert('Failed to join game');
+            return;
+        }
+
+        const data = await res.json(); // e.g. { id: "..." }
         window.location = '/game/' + data.id;
     });
 </script>

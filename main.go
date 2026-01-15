@@ -15,8 +15,8 @@ import (
 
 type apiConfig struct {
 	db 	      *database.Queries
-	sessions  map[string]string // sessionID -> userID
-	games     map[string]*game.GameState
+	sessions  map[string]string  		 // sessionID -> userID
+	games     map[string]*game.GameState // gameID    -> gamestate
 	templates template.Template
 }
 
@@ -64,12 +64,13 @@ func main() {
 	mux.HandleFunc("POST /api/login", cfg.handlerLogin)
 	mux.HandleFunc("POST /api/signup", cfg.handlerSignup)
 	mux.HandleFunc("POST /api/games", cfg.handlerCreateGame)
+	mux.HandleFunc("POST /api/games/", cfg.handlerJoinGame)
 	
 
 	mux.HandleFunc("GET /dashboard", cfg.handlerDashboard)
 	mux.HandleFunc("GET /login", cfg.handlerLoginPage)
 	mux.HandleFunc("GET /signup", cfg.handlerSignupPage)
-	mux.HandleFunc("GET /game/{id}", cfg.handlerGamePage)
+	mux.HandleFunc("GET /game/", cfg.handlerGamePage)
 
 	srv := &http.Server{
 		Addr:    ":" + port,
