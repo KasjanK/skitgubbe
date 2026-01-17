@@ -18,6 +18,7 @@ type apiConfig struct {
 	sessions  map[string]string  		 // sessionID -> userID
 	games     map[string]*game.GameState // gameID    -> gamestate
 	templates template.Template
+	rooms 	  map[string]*game.Room      // roomID    -> room
 }
 
 func main() {
@@ -45,6 +46,7 @@ func main() {
 		sessions:  make(map[string]string),
 		templates: *template,
 		games: 	   make(map[string]*game.GameState),
+		rooms: 	   make(map[string]*game.Room),
 	}
 
 	mux := http.NewServeMux()
@@ -63,14 +65,20 @@ func main() {
 
 	mux.HandleFunc("POST /api/login", cfg.handlerLogin)
 	mux.HandleFunc("POST /api/signup", cfg.handlerSignup)
+
 	mux.HandleFunc("POST /api/games", cfg.handlerCreateGame)
 	mux.HandleFunc("POST /api/games/", cfg.handlerJoinGame)
+
+	mux.HandleFunc("POST /api/rooms", cfg.handlerCreateRoom)
+	mux.HandleFunc("POST /api/rooms/", cfg.handlerJoinRoom)
 	
 
 	mux.HandleFunc("GET /dashboard", cfg.handlerDashboard)
 	mux.HandleFunc("GET /login", cfg.handlerLoginPage)
 	mux.HandleFunc("GET /signup", cfg.handlerSignupPage)
 	mux.HandleFunc("GET /game/", cfg.handlerGamePage)
+	mux.HandleFunc("GET /room/", cfg.handlerRoomPage)
+	mux.HandleFunc("GET /api/rooms/", cfg.handlerRoomState)
 
 	srv := &http.Server{
 		Addr:    ":" + port,

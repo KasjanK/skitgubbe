@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Game Room</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/static/css/room.css" />
+</head>
+<body>
+
+<div class="room-container">
+
+  <header class="room-header">
+    <h1>Game Room</h1>
+    <span class="room-id">Room ID: <span id="game_id"></span></span>
+  </header>
+
+  <section class="players">
+    <h2>Players</h2>
+
+    <ul id="player-list" class="player-list">
+    </ul>
+  </section>
+
+  <footer class="actions">
+    <!-- Shown for non-host -->
+    <button id="readyBtn" onclick="toggleReady()">Ready</button>
+
+    <!-- Shown for host -->
+    <button class="primary">Start Game</button>
+  </footer>
+
+</div>
+
+<script>
+    const roomId = /* get from URL or template, e.g.: */
+        window.location.pathname.split('/')[2]; // for /room/{id}
+
+    async function refreshRoom() {
+        const res = await fetch('/api/rooms/' + encodeURIComponent(roomId));
+        if (!res.ok) {
+            console.error('Failed to fetch room state');
+            return;
+        }
+        const room = await res.json();
+        const ul = document.getElementById('player-list');
+        ul.innerHTML = '';
+        room.players.forEach(p => {
+            const li = document.createElement('li');
+            li.textContent = p.id; // or a display name if you include it
+            ul.appendChild(li);
+        });
+    }
+
+    // initial load
+    refreshRoom();
+    // poll every few seconds
+    setInterval(refreshRoom, 2000);
+</script>    
+</body>
+</html>
+

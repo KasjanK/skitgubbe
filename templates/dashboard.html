@@ -21,7 +21,7 @@
     <section class="card highlight">
       <h2>Create a Match</h2>
       <p>Jump into a ranked or casual game.</p>
-      <button id="primary" class="primary">Find Match</button>
+      <button id="primary" class="primary">Create a Match</button>
     </section>
     
     <!-- Join Match -->
@@ -76,18 +76,18 @@
     document.getElementById('primary').addEventListener('click', async (e) => {
         e.preventDefault();
 
-        const res = await fetch('/api/games', {
+        const res = await fetch('/api/rooms', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
         });
 
         if (!res.ok) {
-            alert('Failed to create game');
+            alert('Failed to create room');
             return;
         };
 
         const data = await res.json(); // { id: "..." }
-        window.location = '/game/' + data.id;
+        window.location = '/room/' + data.id;
     });
     function openJoinModal() {
         document.getElementById("joinModal").classList.remove("hidden");
@@ -104,19 +104,9 @@
         const gameIdInput = document.getElementById('game_id');
         const gameID = gameIdInput.value.trim();
 
-        const res = await fetch('/api/games/' + gameID + '/join', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ game_id: gameID }),
-        });
+        await fetch(`/api/rooms/${encodeURIComponent(gameID)}/join`, { method: 'POST' });
 
-        if (!res.ok) {
-            alert('Failed to join game');
-            return;
-        }
-
-        const data = await res.json(); // e.g. { id: "..." }
-        window.location = '/game/' + data.id;
+        window.location = '/room/' + gameID;
     });
 </script>
 </body>

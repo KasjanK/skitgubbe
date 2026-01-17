@@ -47,7 +47,7 @@ func NewGame(players []PlayerState) *GameState {
 	ShuffleDeck(deck)
 	players, remainingDeck := DealCards(players, deck, 3)
 
-	game := &GameState{
+	game := &GameState {
 		ID: gameID.String(),
 		Players: players,
 		CurrentPlayer: players[rand.Intn(len(players))].ID,
@@ -55,4 +55,23 @@ func NewGame(players []PlayerState) *GameState {
 		Pile: nil,
 	}
 	return game
+}
+
+func NewRoom(ownerID PlayerID) *Room {
+	roomID := uuid.New()
+	
+	players := []PlayerState{
+		{ID: ownerID},
+	}
+
+	room := &Room {
+		ID:		 roomID.String(),
+		OwnerID: ownerID,
+		Players: players,
+		Ready:   make(map[PlayerID]bool),
+		Started: false,
+		GameID:  "",
+	}
+
+	return room
 }
