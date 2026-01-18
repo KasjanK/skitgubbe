@@ -1,35 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
-	"github.com/Kasjank/skitgubbe/internal/game"
 )
-
-func (cfg *apiConfig) handlerCreateGame(w http.ResponseWriter, r *http.Request) {
-	user, err := cfg.currentUser(r)
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, "unauthorized", err)
-		return
-	}
-
-	players := []game.PlayerState{
-		{ID: game.PlayerID(user.ID)},
-	}
-
-	game := game.NewGame(players)
-	cfg.games[game.ID] = game
-
-	fmt.Println(cfg.games)
-
-	respondWithJSON(w, http.StatusOK, struct {
-		ID string `json:"id"`
-	}{
-		ID: game.ID,
-	})
-}
 
 func (cfg *apiConfig) handlerGamePage(w http.ResponseWriter, r *http.Request) {
 	user, err := cfg.currentUser(r)

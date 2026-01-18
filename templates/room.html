@@ -12,7 +12,7 @@
 
   <header class="room-header">
     <h1>Game Room</h1>
-    <span class="room-id">Room ID: <span id="game-id"></span></span>
+    <span class="room-id">Room ID: <span id="room-id"></span></span>
   </header>
 
   <section class="players">
@@ -23,40 +23,65 @@
   </section>
 
   <footer class="actions">
-    <!-- Shown for non-host -->
     <button id="readyBtn" onclick="toggleReady()">Ready</button>
 
-    <!-- Shown for host -->
-    <button class="primary">Start Game</button>
+    <button id="start-game" class="primary">Start Game</button>
   </footer>
 
 </div>
 
 <script>
-    const roomId = window.location.pathname.split('/')[2]; // for /room/{id}
-    document.getElementById('game-id').textContent = roomId;
+    const roomId = "{{ .RoomID }}";
+    const currentUserId = "{{ .UserID }}";
 
     async function refreshRoom() {
         const res = await fetch('/api/rooms/' + encodeURIComponent(roomId));
-        if (!res.ok) {
-            console.error('Failed to fetch room state');
-            return;
-        }
+        if (!res.ok) return;
+
         const room = await res.json();
+
+        // render players
         const ul = document.getElementById('player-list');
         ul.innerHTML = '';
         room.players.forEach(p => {
             const li = document.createElement('li');
-            li.textContent = p.id; // or a display name if you include it
+            li.textContent = p.id; 
             ul.appendChild(li);
         });
+
+        // host-only start button
+        const startBtn = document.getElementById('start-game');
+        if (room.owner_id === currentUserId && !room.started) {
+            startBtn.disabled = false;
+        } else {
+            startBtn.disabled = true;
+        }
+
+        // if game already started, redirect everyone
+        if (room.started && room.game_id) {
+            window.location = '/game/' + encodeURIComponent(room.game_id);
+        }
     }
 
-    // initial load
+    document.getElementById('start-game').addEventListener('click', async () => {
+        const res = await fetch(
+            '/api/rooms/' + encodeURIComponent(roomId) + '/start',
+            { method: 'POST' }
+        );
+
+        if (!res.ok) {
+            alert('Failed to start game');
+            return;
+        }
+
+        const data = await res.json();
+        window.location = '/game/' + encodeURIComponent(data.game_id);
+    });
+
+    // initial load + polling so joiners see updates and redirect
     refreshRoom();
-    // poll every few seconds
     setInterval(refreshRoom, 2000);
-</script>    
+</script>
 </body>
 </html>
 

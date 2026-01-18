@@ -28,6 +28,11 @@ func (cfg *apiConfig) handlerCreateRoom(w http.ResponseWriter, r *http.Request) 
 	})
 }
 
+type RoomPageData struct {
+	RoomID string
+	UserID string
+}
+
 func (cfg *apiConfig) handlerRoomPage(w http.ResponseWriter, r *http.Request) {
 	user, err := cfg.currentUser(r)
 	if err != nil {
@@ -55,7 +60,12 @@ func (cfg *apiConfig) handlerRoomPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := cfg.templates.ExecuteTemplate(w, "room.html", nil); err != nil {
+	data := RoomPageData{
+		RoomID: room.ID,
+		UserID: user.ID,
+	}
+
+	if err := cfg.templates.ExecuteTemplate(w, "room.html", data); err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Could not execute room template", err)
 		return
 	}
@@ -87,6 +97,5 @@ func (cfg *apiConfig) handlerRoomState(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusForbidden, "Forbidden", err)
 		return
 	}
-	fmt.Println(room.Players)	
 	respondWithJSON(w, http.StatusOK, room)
 }

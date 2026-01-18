@@ -59,17 +59,15 @@ func main() {
 	)
 	
 	//TODO:
+	//POST startgame
 	//GET  /api/games/{id}/state → return view of game state for the current user.
 	//POST /api/games/{id}/move  → apply a move.
 
 	mux.HandleFunc("POST /api/login", cfg.handlerLogin)
 	mux.HandleFunc("POST /api/signup", cfg.handlerSignup)
 
-	mux.HandleFunc("POST /api/games", cfg.handlerCreateGame)
-	mux.HandleFunc("POST /api/games/", cfg.handlerJoinGame)
-
 	mux.HandleFunc("POST /api/rooms", cfg.handlerCreateRoom)
-	mux.HandleFunc("POST /api/rooms/", cfg.handlerJoinRoom)
+	mux.HandleFunc("POST /api/rooms/", cfg.handlerRoomsPost)
 
 	mux.HandleFunc("GET /dashboard", cfg.handlerDashboard)
 	mux.HandleFunc("GET /login", cfg.handlerLoginPage)

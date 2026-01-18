@@ -59,7 +59,7 @@
     <input
       type="text"
       placeholder="Match ID"
-      id="game_id"
+      id="room-id"
     />
 
     <div class="modal-actions">
@@ -101,12 +101,12 @@
     document.getElementById('secondary').addEventListener('click', async (e) => {
         e.preventDefault();
 
-        const gameIdInput = document.getElementById('game_id');
-        const gameID = gameIdInput.value.trim();
+        const roomIdInput = document.getElementById('room-id');
+        const roomId = roomIdInput.value.trim();
 
-        await fetch(`/api/rooms/${encodeURIComponent(gameID)}/join`, { method: 'POST' });
+        await fetch(`/api/rooms/${encodeURIComponent(roomId)}/join`, { method: 'POST' });
 
-        window.location = '/room/' + gameID;
+        window.location = '/room/' + roomId;
     });
 </script>
 </body>
