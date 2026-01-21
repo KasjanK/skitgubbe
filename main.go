@@ -72,7 +72,10 @@ func main() {
 	mux.HandleFunc("GET /dashboard", cfg.handlerDashboard)
 	mux.HandleFunc("GET /login", cfg.handlerLoginPage)
 	mux.HandleFunc("GET /signup", cfg.handlerSignupPage)
+
 	mux.HandleFunc("GET /game/", cfg.handlerGamePage)
+	mux.HandleFunc("GET /api/games/", cfg.handlerGameState)
+
 	mux.HandleFunc("GET /room/", cfg.handlerRoomPage)
 	mux.HandleFunc("GET /api/rooms/", cfg.handlerRoomState)
 

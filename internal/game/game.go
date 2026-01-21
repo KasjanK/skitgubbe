@@ -79,3 +79,16 @@ type Room struct {
 	Started bool              `json:"started"`
 	GameID string             `json:"game_id"`
 }
+
+type VisiblePlayer struct {
+	ID 		 PlayerID `json:"id"`
+	HandSize int 	  `json:"hand_size"`
+}
+
+type VisibleState struct {
+	ID 			 string      	 `json:"id"`
+	You 		 PlayerState     `json:"you"`
+	Others       []VisiblePlayer `json:"others"`
+	Pile 		 []Card			 `json:"pile"`
+	CurrentPlayer PlayerID		 `json:"current_player"`
+}

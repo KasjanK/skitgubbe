@@ -1,14 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Skitgubbe</title>
-  <link rel="stylesheet" href="/static/css/game.css" />
-</head>
-<body>
-    <p>Game ID: <span id="game-id"></p>
-    <script>
-        const gameId = window.location.pathname.split('/')[2]; 
-        document.getElementById('game-id').textContent = gameId;
-    </script>
-</body>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Skitgubbe</title>
+        <link rel="stylesheet" href="/static/css/game.css" />
+    </head>
+    <body>
+        <p>Game ID: <span id="game-id"></p>
+        <ul id="your-hand"></ul>
+        <ul id="other-hands"></ul>
+        <script>
+            const gameId = window.location.pathname.split('/')[2]; // /game/{id}
+
+            async function refreshGame() {
+                const res = await fetch('/api/games/' + encodeURIComponent(gameId));
+                if (!res.ok) return;
+
+                const state = await res.json();
+
+                const handUl = document.getElementById('your-hand');
+                handUl.innerHTML = '';
+
+                state.you.hand.forEach(card => {
+                    const li = document.createElement('li');
+                    li.textContent = `Rank: ${card.rank}, Suit: ${card.suit}`;
+                    li.dataset.rank = card.rank;
+                    li.dataset.suit = card.suit;
+                    handUl.appendChild(li);
+                });
+
+                const othersDiv = document.getElementById('other-hands');
+                othersDiv.innerHTML = '';
+
+                state.others.forEach(p => {
+                    const container = document.createElement('div');
+                    container.className = 'player-hand';
+
+                    const label = document.createElement('div');
+                    label.textContent = `Player ${p.id}`;
+                    container.appendChild(label);
+
+                    const cards = document.createElement('div');
+                    cards.className = 'face-down-hand';
+
+                    for (let i = 0; i < p.hand_size; i++) {
+                        const cardBack = document.createElement('div');
+                        cardBack.className = 'card card-back';
+                        cards.appendChild(cardBack);
+                    }
+
+                    container.appendChild(cards);
+                    othersDiv.appendChild(container);
+                });
+            }
+
+            refreshGame();
+            setInterval(refreshGame, 1000);
+        </script>
+    </body>

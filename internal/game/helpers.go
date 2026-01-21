@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"math/rand"
 
 	"github.com/google/uuid"
@@ -54,6 +55,14 @@ func NewGame(players []PlayerState) *GameState {
 		Deck: remainingDeck,
 		Pile: nil,
 	}
+	for _, player := range game.Players {
+		fmt.Printf("PlayerID: %s\n", player.ID)
+		fmt.Printf("Hand:\n")
+		for _, card := range player.Hand {
+			fmt.Printf("Rank: %d, Suit: %d", card.Rank, card.Suit)
+		}
+	}
+
 	return game
 }
 
@@ -74,4 +83,28 @@ func NewRoom(ownerID PlayerID) *Room {
 	}
 
 	return room
+}
+
+func VisibleStateFor(gs *GameState, viewer PlayerID) VisibleState {
+	var you PlayerState
+	others := make([]VisiblePlayer, 0, len(gs.Players) - 1)
+
+	for _, player := range gs.Players {
+		if player.ID == viewer {
+			you = player
+		} else {
+			others = append(others, VisiblePlayer{
+				ID: 	player.ID,
+				HandSize: len(player.Hand),
+			})
+		}
+	}
+
+	return VisibleState{
+		ID: 		   gs.ID,
+		You: 		   you,
+		Others:		   others,
+		Pile: 		   gs.Pile,
+		CurrentPlayer: gs.CurrentPlayer,
+	}
 }
