@@ -92,3 +92,16 @@ type VisibleState struct {
 	Pile 		 []Card			 `json:"pile"`
 	CurrentPlayer PlayerID		 `json:"current_player"`
 }
+
+type MoveType string
+
+const (
+	MoveTypePlayCard MoveType = "play_card"
+	MoveTypePickUp   MoveType = "pickup"
+	MoveTypeChance   MoveType = "chance"
+)
+
+type Move struct {
+	Move MoveType `json:"type"`
+	Card *Card    `json:"card,omitempty"`
+}

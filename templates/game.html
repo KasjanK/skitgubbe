@@ -7,8 +7,11 @@
     </head>
     <body>
         <p>Game ID: <span id="game-id"></p>
+        <p>Current player: <span id="current-player"></p>
         <ul id="your-hand"></ul>
         <ul id="other-hands"></ul>
+        <div class="pile" id="pile"></div>
+        
         <script>
             const gameId = window.location.pathname.split('/')[2]; // /game/{id}
 
@@ -52,8 +55,28 @@
                     container.appendChild(cards);
                     othersDiv.appendChild(container);
                 });
+
+                const currentPlayer = document.getElementById('current-player');
+                currentPlayer.innerHTML = state.current_player;
+                
+                renderPile(state);
             }
 
+            function renderPile(state) {
+                const pileEl = document.getElementById('pile');
+                pileEl.innerHTML = '';
+
+                const cards = state.pile || []; // fallback to empty array
+                cards.forEach((card, i) => {
+                    const el = document.createElement('div');
+                    el.classList.add('card');
+                    el.textContent = `${card.rank} ${card.suit}`;
+                    el.style.position = 'absolute';
+                    el.style.top = `${i * 2}px`;
+                    el.style.left = `${i * 2}px`;
+                    pileEl.appendChild(el);
+                });
+            }
             refreshGame();
             setInterval(refreshGame, 1000);
         </script>
