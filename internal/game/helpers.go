@@ -109,3 +109,50 @@ func VisibleStateFor(gs *GameState, viewer PlayerID) VisibleState {
 		CurrentPlayer: gs.CurrentPlayer,
 	}
 }
+
+func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
+	if gs.CurrentPlayer != playerID {
+		return fmt.Errorf("not your turn")
+	}
+	var player *PlayerState
+	
+	for i  := range gs.Players {
+		if gs.Players[i].ID == playerID {
+			player = &gs.Players[i]
+			break
+		}
+	}
+
+	if player == nil {
+		return fmt.Errorf("Player not in game")
+	}
+
+	switch (move.Move) {
+	case MoveTypePlayCard:
+		if len(gs.Pile) == 0 || move.Card.Rank > gs.Pile[len(gs.Pile) - 1].Rank {
+			gs.Pile = append(gs.Pile, *move.Card)
+			for i, card := range player.Hand {
+				if card.Rank == move.Card.Rank || card.Suit == move.Card.Suit {
+					player.Hand = slices.Delete(player.Hand, i, i + 1)
+				}
+			}
+		}
+	}
+
+	if len(gs.Players) == 0 {
+		return fmt.Errorf("no players left")
+	}
+
+	idx := 0
+	for i, player := range gs.Players {
+		if player.ID == gs.CurrentPlayer {
+			idx = i
+			break
+		}
+	}
+
+	nextPlayer := (idx + 1) % len(gs.Players)
+	gs.CurrentPlayer = gs.Players[nextPlayer].ID
+
+	return nil
+}

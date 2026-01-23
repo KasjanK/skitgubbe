@@ -24,11 +24,14 @@
                 const handUl = document.getElementById('your-hand');
                 handUl.innerHTML = '';
 
+                const isYourTurn = state.current_player === state.you.id;
+
                 state.you.hand.forEach(card => {
                     const li = document.createElement('li');
                     li.textContent = `Rank: ${card.rank}, Suit: ${card.suit}`;
                     li.dataset.rank = card.rank;
                     li.dataset.suit = card.suit;
+                    li.addEventListener('click', () => playCard(card));
                     handUl.appendChild(li);
                 });
 
@@ -56,9 +59,7 @@
                     othersDiv.appendChild(container);
                 });
 
-                const currentPlayer = document.getElementById('current-player');
-                currentPlayer.innerHTML = state.current_player;
-                
+                document.getElementById('current-player').textContent = isYourTurn ? 'Your turn' : `Waiting for ${state.current_player}`; 
                 renderPile(state);
             }
 
@@ -76,6 +77,20 @@
                     el.style.left = `${i * 2}px`;
                     pileEl.appendChild(el);
                 });
+            }
+
+            async function playCard(card) {
+                const res = await fetch(`/api/games/${encodeURIComponent(gameId)}/move`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        type: 'play_card',
+                        card: { rank: card.rank, suit: card.suit },
+                    }),
+                });
+
+                if (!res.ok) return;
+                await refreshGame();
             }
             refreshGame();
             setInterval(refreshGame, 1000);

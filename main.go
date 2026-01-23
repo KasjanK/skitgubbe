@@ -69,6 +69,8 @@ func main() {
 	mux.HandleFunc("POST /api/rooms", cfg.handlerCreateRoom)
 	mux.HandleFunc("POST /api/rooms/", cfg.handlerRoomsPost)
 
+	mux.HandleFunc("POST /api/games/", cfg.handlerGameMove)
+
 	mux.HandleFunc("GET /dashboard", cfg.handlerDashboard)
 	mux.HandleFunc("GET /login", cfg.handlerLoginPage)
 	mux.HandleFunc("GET /signup", cfg.handlerSignupPage)
