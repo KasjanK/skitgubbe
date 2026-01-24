@@ -59,9 +59,13 @@ func main() {
 	)
 	
 	//TODO:
-	//POST startgame
-	//GET  /api/games/{id}/state → return view of game state for the current user.
-	//POST /api/games/{id}/move  → apply a move.
+	// - draw a card after playing one, if pile is empty -> cards on table. If you need to pickup, hands > cards on table
+	// - implement pickup and chance move types
+	// - what happens when a player wins. spectate/leave to dashboard options. summary modal.
+	
+	//BUGS: 
+	// - player should not be able to play lower card than top of pile
+	// - game doesnt show game id 
 
 	mux.HandleFunc("POST /api/login", cfg.handlerLogin)
 	mux.HandleFunc("POST /api/signup", cfg.handlerSignup)

@@ -136,6 +136,8 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 					player.Hand = slices.Delete(player.Hand, i, i + 1)
 				}
 			}
+		} else {
+			return fmt.Errorf("card too low")
 		}
 	}
 
