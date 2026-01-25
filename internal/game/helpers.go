@@ -156,6 +156,14 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 		gs.Pile = append(gs.Pile, *move.Card)
 	}
 
+	if move.Move == MoveTypePickUp {
+		if len(gs.Pile) == 0{
+			return fmt.Errorf("Pile is empty, nothing to pick up")
+		}
+		player.Hand = append(player.Hand, gs.Pile...)
+		gs.Pile = nil
+	}
+
 	if len(gs.Players) == 0 {
 		return fmt.Errorf("no players left")
 	}

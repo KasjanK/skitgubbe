@@ -10,11 +10,15 @@
         <p>Current player: <span id="current-player"></p>
         <ul id="your-hand"></ul>
         <ul id="other-hands"></ul>
+        <button id="pickup">Pickup Pile</button>
         <div class="pile" id="pile"></div>
         
         <script>
             const gameId = window.location.pathname.split('/')[2]; // /game/{id}
             document.getElementById('game-id').innerHTML = gameId
+
+            const pickup = document.getElementById('pickup');
+            pickup.addEventListener('click', () => pickupPile());
 
             async function refreshGame() {
                 const res = await fetch('/api/games/' + encodeURIComponent(gameId));
@@ -60,6 +64,7 @@
                     othersDiv.appendChild(container);
                 });
 
+
                 document.getElementById('current-player').textContent = isYourTurn ? 'Your turn' : `Waiting for ${state.current_player}`; 
                 renderPile(state);
             }
@@ -87,6 +92,19 @@
                     body: JSON.stringify({
                         type: 'play_card',
                         card: { rank: card.rank, suit: card.suit },
+                    }),
+                });
+
+                if (!res.ok) return;
+                await refreshGame();
+            }
+            
+            async function pickupPile() {
+                const res = await fetch(`/api/games/${encodeURIComponent(gameId)}/move`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        type: 'pickup',
                     }),
                 });
 

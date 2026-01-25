@@ -64,7 +64,6 @@ func main() {
 	// - what happens when a player wins. spectate/leave to dashboard options. summary modal.
 	
 	//BUGS: 
-	// - game doesnt show game id 
 
 	mux.HandleFunc("POST /api/login", cfg.handlerLogin)
 	mux.HandleFunc("POST /api/signup", cfg.handlerSignup)
