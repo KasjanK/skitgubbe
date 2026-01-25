@@ -14,6 +14,7 @@
         
         <script>
             const gameId = window.location.pathname.split('/')[2]; // /game/{id}
+            document.getElementById('game-id').innerHTML = gameId
 
             async function refreshGame() {
                 const res = await fetch('/api/games/' + encodeURIComponent(gameId));

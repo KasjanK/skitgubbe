@@ -59,12 +59,11 @@ func main() {
 	)
 	
 	//TODO:
-	// - draw a card after playing one, if pile is empty -> cards on table. If you need to pickup, hands > cards on table
 	// - implement pickup and chance move types
+	// - draw a card after playing one, if pile is empty -> cards on table. If you need to pickup, hands > cards on table
 	// - what happens when a player wins. spectate/leave to dashboard options. summary modal.
 	
 	//BUGS: 
-	// - player should not be able to play lower card than top of pile
 	// - game doesnt show game id 
 
 	mux.HandleFunc("POST /api/login", cfg.handlerLogin)
