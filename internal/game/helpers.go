@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"slices"
 
@@ -127,18 +128,32 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 		return fmt.Errorf("Player not in game")
 	}
 
-	switch (move.Move) {
-	case MoveTypePlayCard:
-		if len(gs.Pile) == 0 || move.Card.Rank > gs.Pile[len(gs.Pile) - 1].Rank {
-			gs.Pile = append(gs.Pile, *move.Card)
-			for i, card := range player.Hand {
-				if card.Rank == move.Card.Rank || card.Suit == move.Card.Suit {
-					player.Hand = slices.Delete(player.Hand, i, i + 1)
-				}
+	if move.Move == MoveTypePlayCard {
+		// check for card in hand
+		idx := -1
+		for i, card := range player.Hand {
+			if card.Suit == move.Card.Suit && card.Rank == move.Card.Rank {
+				idx = i
+				break
 			}
-		} else {
-			return fmt.Errorf("card too low")
 		}
+		if idx == -1 {
+			return fmt.Errorf("Card not in hand")
+		}
+
+		// check pile 
+		if len(gs.Pile) == 0 {
+			log.Printf("Pile is empty, card %v played", *move.Card)
+		} else {
+			top := gs.Pile[len(gs.Pile) - 1]
+			if move.Card.Rank < top.Rank {
+				return fmt.Errorf("Card too low")
+			}
+		}
+		
+		// apply move
+		player.Hand = slices.Delete(player.Hand, idx, idx + 1)
+		gs.Pile = append(gs.Pile, *move.Card)
 	}
 
 	if len(gs.Players) == 0 {
