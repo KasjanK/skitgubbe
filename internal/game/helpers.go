@@ -157,7 +157,18 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 		player.Hand = slices.Delete(player.Hand, idx, idx + 1)
 		gs.Pile = append(gs.Pile, *move.Card)
 		log.Printf("Card %v played by %v", *move.Card, player.ID)
-		log.Printf("Cards left in deck: %v", len(gs.Deck))
+
+		// draw card after move
+		if len(player.Hand) != 3 {
+			for i := 0; i < (3 - len(player.Hand)); i++ {
+				if len(gs.Deck) == 0 {
+					break 
+				}
+				player.Hand = append(player.Hand, gs.Deck[len(gs.Deck) - 1])
+				gs.Deck = slices.Delete(gs.Deck, len(gs.Deck) - 1, len(gs.Deck))
+				fmt.Printf("Cards left in deck: %v", len(gs.Deck))
+			}
+		}
 	}
 
 	if move.Move == MoveTypePickUp {
