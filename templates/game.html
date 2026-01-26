@@ -11,6 +11,7 @@
         <ul id="your-hand"></ul>
         <ul id="other-hands"></ul>
         <button id="pickup">Pickup Pile</button>
+        <button id="chance">Chance</button>
         <div class="pile" id="pile"></div>
         
         <script>
@@ -19,6 +20,9 @@
 
             const pickup = document.getElementById('pickup');
             pickup.addEventListener('click', () => pickupPile());
+
+            const change = document.getElementById('chance');
+            change.addEventListener('click', () => chanceCard());
 
             async function refreshGame() {
                 const res = await fetch('/api/games/' + encodeURIComponent(gameId));
@@ -111,6 +115,20 @@
                 if (!res.ok) return;
                 await refreshGame();
             }
+
+            async function chanceCard() {
+                const res = await fetch(`/api/games/${encodeURIComponent(gameId)}/move`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        type: 'chance',
+                    }),
+                });
+
+                if (!res.ok) return;
+                await refreshGame();
+            }
+
             refreshGame();
             setInterval(refreshGame, 1000);
         </script>

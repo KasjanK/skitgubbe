@@ -61,9 +61,11 @@ func NewGame(players []PlayerState) *GameState {
 		fmt.Printf("PlayerID: %s\n", player.ID)
 		fmt.Printf("Hand:\n")
 		for _, card := range player.Hand {
-			fmt.Printf("Rank: %d, Suit: %d", card.Rank, card.Suit)
+			fmt.Printf("Rank: %d, Suit: %d\n", card.Rank, card.Suit)
 		}
 	}
+
+	fmt.Printf("All cards are dealed. Cards left in deck: %v", len(game.Deck))
 
 	return game
 }
@@ -154,20 +156,48 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 		// apply move
 		player.Hand = slices.Delete(player.Hand, idx, idx + 1)
 		gs.Pile = append(gs.Pile, *move.Card)
+		log.Printf("Card %v played by %v", *move.Card, player.ID)
+		log.Printf("Cards left in deck: %v", len(gs.Deck))
 	}
 
 	if move.Move == MoveTypePickUp {
-		if len(gs.Pile) == 0{
+		if len(gs.Pile) == 0 {
 			return fmt.Errorf("Pile is empty, nothing to pick up")
 		}
 		player.Hand = append(player.Hand, gs.Pile...)
 		gs.Pile = nil
 	}
 
+	if move.Move == MoveTypeChance {
+		if len(gs.Pile) == 0 {
+			return fmt.Errorf("Pile is empty, not allowed to take a chance")
+		}
+
+		if len(gs.Deck) == 0 {
+			return fmt.Errorf("Deck is empty, no cards left")
+		}
+
+		chanceCard := gs.Deck[len(gs.Deck) - 1]
+		gs.Deck = slices.Delete(gs.Deck, len(gs.Deck) - 1, len(gs.Deck))		
+		fmt.Printf("Chancecard taken: %v. Cards left: %v", chanceCard, len(gs.Deck))
+
+		top := gs.Pile[len(gs.Pile) - 1]
+		if chanceCard.Rank < top.Rank {
+			gs.Pile = append(gs.Pile, chanceCard)
+			player.Hand = append(player.Hand, gs.Pile...)
+			gs.Pile = nil
+			fmt.Printf("Chancecard too low, picked up pile. Cards left: %v\n", len(gs.Deck))
+		} else {
+			gs.Pile = append(gs.Pile, chanceCard)
+			fmt.Printf("Chancecard played: %v. Cards left: %v\n", chanceCard, len(gs.Deck))
+		}
+	}
+
 	if len(gs.Players) == 0 {
 		return fmt.Errorf("no players left")
 	}
-
+	
+	// next player
 	idx := 0
 	for i, player := range gs.Players {
 		if player.ID == gs.CurrentPlayer {
