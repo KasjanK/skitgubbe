@@ -59,9 +59,10 @@ func main() {
 	)
 	
 	//TODO:
-	// - implement chance move type
-	// - draw a card after playing one, if pile is empty -> cards on table. If you need to pickup, hands > cards on table
-	// - what happens when a player wins. spectate/leave to dashboard options. summary modal.
+	// - special cards
+	// - if pile is empty -> cards on table. If you need to pickup, hands > cards on table
+	// - win conditions. 
+	// - what if you can't win because of special last card
 	
 	//BUGS: 
 
