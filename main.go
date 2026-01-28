@@ -60,8 +60,8 @@ func main() {
 	
 	//TODO:
 	// - special cards
-	// - if pile is empty -> cards on table. If you need to pickup, hands > cards on table
-	// - win conditions. 
+	// - if you can play a card from faceup cards, you must pick that card. disable the other cards.
+	// - win conditions. remove winning player from game.  
 	// - what if you can't win because of special last card
 	
 	//BUGS: 
