@@ -204,6 +204,67 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 		}
 	}
 
+	if move.Move == MoveTypePlayFaceUpCard {
+		// only when hand and deck are empty
+		if len(player.Hand) != 0 || len(gs.Deck) != 0 {
+			return fmt.Errorf("You can't play face-up cards yet")
+		}
+
+		if move.Index == nil {
+			return fmt.Errorf("missing index")
+		}
+
+		idx := *move.Index
+		if idx < 0 || idx >= len(player.FaceupTableCards) {
+			return fmt.Errorf("invalid index")
+		}
+
+		card := player.FaceupTableCards[idx]
+		player.FaceupTableCards = slices.Delete(player.FaceupTableCards, idx, idx + 1)
+
+		if len(gs.Pile) == 0 {
+			gs.Pile = append(gs.Pile, card)
+		} else {
+			top := gs.Pile[len(gs.Pile)-1]
+			if card.Rank < top.Rank {
+				gs.Pile = append(gs.Pile, card)
+				player.Hand = append(player.Hand, gs.Pile...)
+				gs.Pile = nil
+			} else {
+				gs.Pile = append(gs.Pile, card)
+			}
+		}
+	}
+
+	if move.Move == MoveTypePlayFaceDownCard {
+		if len(player.Hand) != 0 || len(player.FaceupTableCards) != 0 || len(gs.Deck) != 0 {
+			return fmt.Errorf("You can't play those yet")
+		}
+
+		idx := *move.Index
+		if idx < 0 || idx >= len(player.FacedownTableCards) {
+			return fmt.Errorf("invalid index")
+		}
+
+
+		card := player.FacedownTableCards[idx]
+		player.FacedownTableCards = slices.Delete(player.FacedownTableCards, idx, idx + 1)
+
+		if len(gs.Pile) == 0 {
+			gs.Pile = append(gs.Pile, card)
+		} else {
+			top := gs.Pile[len(gs.Pile) - 1]
+			if card.Rank < top.Rank {
+				gs.Pile = append(gs.Pile, card)
+				player.Hand = append(player.Hand, gs.Pile...)
+				gs.Pile = nil
+				fmt.Println("Facedown card too low, picked up pile.")
+			} else {
+				gs.Pile = append(gs.Pile, card)
+			}
+		}
+	}
+
 	if len(gs.Players) == 0 {
 		return fmt.Errorf("no players left")
 	}

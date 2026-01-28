@@ -9,6 +9,8 @@
         <p>Game ID: <span id="game-id"></p>
         <p>Current player: <span id="current-player"></p>
         <ul id="your-hand"></ul>
+        <ul id="your-table-cards-fu"></ul>
+        <ul id="your-table-cards-fd"></ul>
         <ul id="other-hands"></ul>
         <button id="pickup">Pickup Pile</button>
         <button id="chance">Chance</button>
@@ -33,6 +35,12 @@
                 const handUl = document.getElementById('your-hand');
                 handUl.innerHTML = '';
 
+                const tableCardsFu = document.getElementById('your-table-cards-fu');
+                tableCardsFu.innerHTML = '';
+
+                const tableCardsFd = document.getElementById('your-table-cards-fd');
+                tableCardsFd.innerHTML = '';
+
                 const isYourTurn = state.current_player === state.you.id;
 
                 state.you.hand.forEach(card => {
@@ -42,6 +50,22 @@
                     li.dataset.suit = card.suit;
                     li.addEventListener('click', () => playCard(card));
                     handUl.appendChild(li);
+                });
+
+                state.you.faceup_table_cards.forEach((card, idx) => {
+                    const li = document.createElement('li');
+                    li.className = 'card';
+                    li.textContent = `${card.rank} ${card.suit}`;
+                    li.addEventListener('click', () => playFaceUp(idx));
+                    tableCardsFu.appendChild(li);
+                });
+
+                state.you.facedown_table_cards.forEach((_, idx) => {
+                    const li = document.createElement('li');
+                    li.className = 'card card-back';
+                    li.addEventListener('click', () => playFaceDown(idx));
+                    tableCardsFd.className = 'face-down-hand';
+                    tableCardsFd.appendChild(li);
                 });
 
                 const othersDiv = document.getElementById('other-hands');
@@ -129,6 +153,33 @@
                 await refreshGame();
             }
 
+            async function playFaceDown(index) {
+                const res = await fetch(`/api/games/${encodeURIComponent(gameId)}/move`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        type: 'play_face_down',
+                        index,
+                    }),
+                });
+
+                if (!res.ok) return;
+                await refreshGame();
+            }
+
+            async function playFaceUp(index) {
+                const res = await fetch(`/api/games/${encodeURIComponent(gameId)}/move`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        type: 'play_face_up',
+                        index,
+                    }),
+                });
+
+                if (!res.ok) return;
+                await refreshGame();
+            }
             refreshGame();
             setInterval(refreshGame, 1000);
         </script>

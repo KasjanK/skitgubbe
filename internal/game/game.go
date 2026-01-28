@@ -96,12 +96,15 @@ type VisibleState struct {
 type MoveType string
 
 const (
-	MoveTypePlayCard MoveType = "play_card"
-	MoveTypePickUp   MoveType = "pickup"
-	MoveTypeChance   MoveType = "chance"
+	MoveTypePlayCard 		 MoveType = "play_card"
+	MoveTypePickUp   		 MoveType = "pickup"
+	MoveTypeChance   	     MoveType = "chance"
+	MoveTypePlayFaceUpCard   MoveType = "play_face_up"
+	MoveTypePlayFaceDownCard MoveType = "play_face_down"
 )
 
 type Move struct {
-	Move MoveType `json:"type"`
-	Card *Card    `json:"card,omitempty"`
+	Move  MoveType `json:"type"`
+	Card  *Card    `json:"card,omitempty"`
+	Index *int     `json:"index,omitempty"` 
 }
