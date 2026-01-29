@@ -265,10 +265,17 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 		}
 	}
 
-	if len(gs.Players) == 0 {
-		return fmt.Errorf("no players left")
+	// remove winner
+	if len(player.Hand) == 0 && len(player.FaceupTableCards) == 0 && len(player.FacedownTableCards) == 0  {
+		fmt.Printf("Player %s won", player.ID)
+		for i, p := range gs.Players {
+			if player.ID == p.ID {
+				gs.Players = slices.Delete(gs.Players, i, i + 1)
+				break
+			}
+		}
 	}
-	
+
 	// next player
 	idx := 0
 	for i, player := range gs.Players {
