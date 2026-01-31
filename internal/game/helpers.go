@@ -267,6 +267,10 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 			return fmt.Errorf("You can't play those yet")
 		}
 
+		if move.Index == nil {
+			return fmt.Errorf("missing index")
+		}
+
 		idx := *move.Index
 		if idx < 0 || idx >= len(player.FacedownTableCards) {
 			return fmt.Errorf("invalid index")
@@ -274,19 +278,40 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 
 		card := player.FacedownTableCards[idx]
 		player.FacedownTableCards = slices.Delete(player.FacedownTableCards, idx, idx + 1)
-
-		if len(gs.Pile) == 0 {
-			gs.Pile = append(gs.Pile, card)
-		} else {
+		if len(gs.Pile) > 0 {
 			top := gs.Pile[len(gs.Pile) - 1]
 			if card.Rank < top.Rank && card.Rank != 10 && card.Rank != 2 {
 				gs.Pile = append(gs.Pile, card)
 				player.Hand = append(player.Hand, gs.Pile...)
 				gs.Pile = nil
 				fmt.Println("Facedown card too low, picked up pile.")
-			} else {
-				gs.Pile = append(gs.Pile, card)
+				return nil
 			}
+		}
+
+		gs.Pile = append(gs.Pile, card)
+
+		if len(player.FacedownTableCards) == 0 {
+			isSpecialOrAce := card.Rank == 2 || card.Rank == 10 || card.Rank == 14
+
+			if isSpecialOrAce {
+				fmt.Println("You can't go out on a special card.")
+				if len(gs.Pile) > 0 {
+					player.Hand = append(player.Hand, gs.Pile...)
+					gs.Pile = nil
+					return nil
+				}
+				return nil
+			}
+
+			fmt.Printf("Player %s won", player.ID)
+			for i, p := range gs.Players {
+				if player.ID == p.ID {
+					gs.Players = slices.Delete(gs.Players, i, i + 1)
+					break
+				}
+			}
+			return nil
 		}
 
 		switch card.Rank {
@@ -296,17 +321,6 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 			case 2: 
 			specialCard = true
 		}	
-	}
-
-	// remove winner
-	if len(player.Hand) == 0 && len(player.FaceupTableCards) == 0 && len(player.FacedownTableCards) == 0  {
-		fmt.Printf("Player %s won", player.ID)
-		for i, p := range gs.Players {
-			if player.ID == p.ID {
-				gs.Players = slices.Delete(gs.Players, i, i + 1)
-				break
-			}
-		}
 	}
 	
 	if !specialCard {

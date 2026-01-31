@@ -59,10 +59,9 @@ func main() {
 	)
 	
 	//TODO:
-	// - special cards
 	// - play multiple cards with the same rank
+	// - swap faceup cards freely
 	// - if you can play a card from faceup cards, you must pick that card. disable the other cards.
-	// - win conditions.  
 	// - what if you can't win because of special last card
 	
 	//BUGS: 
