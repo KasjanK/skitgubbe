@@ -203,11 +203,10 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 			return nil
 		}	
 
-		switch move.Card.Rank {
-		case 10:
+		if move.Card.Rank == 10 || lastFourSame(gs) {
 			gs.Pile = nil
 			specialCard = true
-		case 2:
+		} else if move.Card.Rank == 2 {
 			specialCard = true
 		}
 	}
@@ -234,27 +233,28 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 		fmt.Printf("Chancecard taken: %v. Cards left: %v", chanceCard, len(gs.Deck))
 
 		top := gs.Pile[len(gs.Pile) - 1]
+
 		if chanceCard.Rank < top.Rank && chanceCard.Rank != 10 && chanceCard.Rank != 2 {
 			gs.Pile = append(gs.Pile, chanceCard)
 			player.Hand = append(player.Hand, gs.Pile...)
 			gs.Pile = nil
 			fmt.Printf("Chancecard too low, picked up pile. Cards left: %v\n", len(gs.Deck))
-		} else {
-			gs.Pile = append(gs.Pile, chanceCard)
-			fmt.Printf("Chancecard %v played. Cards left: %v\n", chanceCard, len(gs.Deck))
+			return nil
 		}
 
-		switch chanceCard.Rank {
-		case 10:
+		gs.Pile = append(gs.Pile, chanceCard)
+		fmt.Printf("Chancecard %v played. Cards left: %v\n", chanceCard, len(gs.Deck))
+
+		if chanceCard.Rank == 10 || lastFourSame(gs) {
 			gs.Pile = nil
 			specialCard = true
-		case 2:
+		} else if chanceCard.Rank == 2 {
 			specialCard = true
 		}
 	}
 
 	if move.Move == MoveTypePlayFaceUpCard {
-		// only when hand and deck are empty
+		// only available when hand and deck are empty
 		if len(player.Hand) != 0 || len(gs.Deck) != 0 {
 			return fmt.Errorf("You can't play face-up cards yet")
 		}
@@ -284,13 +284,12 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 			}
 		}
 
-		switch card.Rank {
-		case 10:
+		if card.Rank == 10 || lastFourSame(gs) {
 			gs.Pile = nil
 			specialCard = true
-			case 2: 
+		} else if card.Rank == 2 {
 			specialCard = true
-		}	
+		}
 	}
 
 	if move.Move == MoveTypePlayFaceDownCard {
@@ -346,13 +345,12 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 			return nil
 		}
 
-		switch card.Rank {
-		case 10:
+		if card.Rank == 10 || lastFourSame(gs) {
 			gs.Pile = nil
 			specialCard = true
-			case 2: 
+		} else if card.Rank == 2 {
 			specialCard = true
-		}	
+		}
 	}
 	
 	if !specialCard {
@@ -372,4 +370,19 @@ func advanceTurn(gs *GameState) {
 
 	nextPlayer := (idx + 1) % len(gs.Players)
 	gs.CurrentPlayer = gs.Players[nextPlayer].ID
+}
+
+func lastFourSame(gs *GameState) bool {
+	if len(gs.Pile) < 4 {
+		return false
+	}
+
+	last := gs.Pile[len(gs.Pile) - 1]
+	for i := len(gs.Pile) - 4; i < len(gs.Pile); i++ {
+		if gs.Pile[i].Rank != last.Rank {
+			return false
+		}
+	}
+	fmt.Printf("four in a row")
+	return true
 }
