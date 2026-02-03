@@ -14,6 +14,7 @@
         <ul id="other-hands"></ul>
         <button id="pickup">Pickup Pile</button>
         <button id="chance">Chance</button>
+        <button id="play-selected">Play selected</button>
         <div class="pile" id="pile"></div>
         
         <script>
@@ -25,6 +26,8 @@
 
             const change = document.getElementById('chance');
             change.addEventListener('click', () => chanceCard());
+
+            let selectedCards = [];
 
             async function refreshGame() {
                 const res = await fetch('/api/games/' + encodeURIComponent(gameId));
@@ -43,14 +46,7 @@
 
                 const isYourTurn = state.current_player === state.you.id;
 
-                state.you.hand.forEach(card => {
-                    const li = document.createElement('li');
-                    li.textContent = `Rank: ${card.rank}, Suit: ${card.suit}`;
-                    li.dataset.rank = card.rank;
-                    li.dataset.suit = card.suit;
-                    li.addEventListener('click', () => playCard(card));
-                    handUl.appendChild(li);
-                });
+                renderHand(state.you.hand)
 
                 state.you.faceup_table_cards.forEach((card, idx) => {
                     const li = document.createElement('li');
@@ -110,6 +106,31 @@
                     el.style.top = `${i * 2}px`;
                     el.style.left = `${i * 2}px`;
                     pileEl.appendChild(el);
+                });
+            }
+
+            function renderHand(hand) {
+                const ul = document.getElementById('your-hand');
+                ul.innerHTML = '';
+
+                hand.forEach((card, idx) => {
+                    const li = document.createElement('li');
+                    li.classList.add('card');
+                    li.textContent = `${card.rank} ${card.suit}`;
+
+                    const key = `${card.rank}-${card.suit}-${idx}`;
+                    li.dataset.key = key;
+                    li.dataset.index = idx;
+
+                    if (selectedCards.some(c => c.key === key)) {
+                        li.classList.add('selected');
+                    }
+
+                    li.addEventListener('click', () => {
+                        toggleCardSelection(li, card, idx);
+                    });
+
+                    ul.appendChild(li);
                 });
             }
 
@@ -178,6 +199,45 @@
                 });
 
                 if (!res.ok) return;
+                await refreshGame();
+            }
+
+            function toggleCardSelection(li, card, idx) {
+                const key = `${card.rank}-${card.suit}-${idx}`;
+                const existing = selectedCards.findIndex(c => c.key === key);
+
+                if (existing >= 0) {
+                    selectedCards.splice(existing, 1);
+                    li.classList.remove('selected');
+                } else {
+                    selectedCards.push({ key, card, index: idx });
+                    li.classList.add('selected');
+                }
+            }
+
+            document.getElementById('play-selected').addEventListener('click', playSelected);
+
+            async function playSelected() {
+                if (selectedCards.length === 0) return;
+
+                const indices = selectedCards.map(c => c.index);
+
+                const res = await fetch(`/api/games/${encodeURIComponent(gameId)}/move`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        type: 'play_many',
+                        indices,
+                    }),
+                });
+
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    alert(data.error || 'Move failed');
+                    return;
+                }
+
+                selectedCards = [];
                 await refreshGame();
             }
             refreshGame();
