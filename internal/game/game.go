@@ -81,8 +81,10 @@ type Room struct {
 }
 
 type VisiblePlayer struct {
-	ID 		 PlayerID `json:"id"`
-	HandSize int 	  `json:"hand_size"`
+	ID 		               PlayerID `json:"id"`
+	HandSize 			   int 	    `json:"hand_size"`
+	FacedownTableCardsSize int      `json:"facedown_table_cards_size"`
+	OthersFaceupTableCards []Card   `json:"others_faceup_table_cards"` 
 }
 
 type VisibleState struct {

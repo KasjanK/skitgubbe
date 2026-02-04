@@ -118,6 +118,8 @@ func VisibleStateFor(gs *GameState, viewer PlayerID) VisibleState {
 			others = append(others, VisiblePlayer{
 				ID: 	player.ID,
 				HandSize: len(player.Hand),
+				FacedownTableCardsSize: len(player.FacedownTableCards),
+				OthersFaceupTableCards: player.FaceupTableCards,
 			})
 		}
 	}

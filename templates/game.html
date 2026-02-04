@@ -74,17 +74,38 @@
                     const label = document.createElement('div');
                     label.textContent = `Player ${p.id}`;
                     container.appendChild(label);
+                    
+                    const tableFaceUp = document.createElement('div');
+                    tableFaceUp.innerHTML = '';
 
-                    const cards = document.createElement('div');
-                    cards.className = 'face-down-hand';
+                    p.others_faceup_table_cards.forEach(card => {
+                        const li = document.createElement('li');
+                        li.className = 'card';
+                        li.textContent = `${card.rank} ${card.suit}`;
+                        tableFaceUp.appendChild(li);
+                    });
+                    container.appendChild(tableFaceUp);
+
+                    const tableFaceDown = document.createElement('div');
+                    tableFaceDown.className = 'face-down-table'
+
+                    for (let i = 0; i < p.facedown_table_cards_size; i++) {
+                        const cardBack = document.createElement('div');
+                        cardBack.className = 'card card-back';
+                        tableFaceDown.appendChild(cardBack);
+                    }
+                    container.appendChild(tableFaceDown);
+
+                    const handCards = document.createElement('div');
+                    handCards.className = 'face-down-hand';
 
                     for (let i = 0; i < p.hand_size; i++) {
                         const cardBack = document.createElement('div');
                         cardBack.className = 'card card-back';
-                        cards.appendChild(cardBack);
+                        handCards.appendChild(cardBack);
                     }
 
-                    container.appendChild(cards);
+                    container.appendChild(handCards);
                     othersDiv.appendChild(container);
                 });
 
