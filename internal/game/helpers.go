@@ -24,7 +24,7 @@ func NewDeck() []Card {
 func ShuffleDeck(deck []Card) {
 	// Fisher-Yates
 	deckLength := len(deck)
-	for i := 0; i < deckLength; i++ {
+	for i := range deckLength {
 		r := i + rand.Intn(deckLength - i)
 		deck[i], deck[r] = deck[r], deck[i]
 	}
@@ -32,16 +32,29 @@ func ShuffleDeck(deck []Card) {
 
 func DealCards(players []PlayerState, deck []Card, cardsPerPlayer int) ([]PlayerState, []Card) {
 	idx := 0
-	for player := range players {
-		for i := 0; i < cardsPerPlayer; i++{
-			players[player].Hand = append(players[player].Hand, deck[idx])
-			idx++
+	n := len(players)
+
+	for  range cardsPerPlayer {
+		for player := range n {
 			players[player].FacedownTableCards = append(players[player].FacedownTableCards, deck[idx])
 			idx++
+		}
+	}
+
+	for range cardsPerPlayer {
+		for player := range n {
 			players[player].FaceupTableCards = append(players[player].FaceupTableCards, deck[idx])
 			idx++
 		}
 	}
+
+	for range cardsPerPlayer {
+		for player := range n {
+			players[player].Hand = append(players[player].Hand, deck[idx])
+			idx++
+		}
+	}
+
 	return players, deck[idx:]
 }
 
@@ -52,11 +65,11 @@ func NewGame(players []PlayerState) *GameState {
 	players, remainingDeck := DealCards(players, deck, 3)
 
 	game := &GameState {
-		ID: gameID.String(),
-		Players: players,
+		ID: 		   gameID.String(),
+		Players:       players,
 		CurrentPlayer: players[rand.Intn(len(players))].ID,
-		Deck: remainingDeck,
-		Pile: nil,
+		Deck: 		   remainingDeck,
+		Pile: 		   nil,
 	}
 	for _, player := range game.Players {
 		fmt.Printf("PlayerID: %s\n", player.ID)

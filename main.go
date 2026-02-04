@@ -59,7 +59,6 @@ func main() {
 	)
 	
 	//TODO:
-	// - play multiple cards with the same rank
 	// - swap faceup cards freely
 	// - if you can play a card from faceup cards, you must pick that card. disable the other cards.
 	
