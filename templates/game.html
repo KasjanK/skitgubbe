@@ -240,20 +240,22 @@
 
                 const faceupUl = document.getElementById('your-faceup');
                 faceupUl.innerHTML = '';
-                (state.you.faceup_table_cards || []).forEach(card => {
+                (state.you.faceup_table_cards || []).forEach((card, idx) => {
                     const li = document.createElement('li');
                     li.classList.add('card');
                     li.textContent = `${card.rank} ${card.suit}`;
+                    li.addEventListener('click', () => playFaceUp(idx));
                     faceupUl.appendChild(li);
                 });
 
                 const facedownDiv = document.getElementById('your-facedown');
                 facedownDiv.innerHTML = '';
-                for (let i = 0; i < state.you.facedown_table_cards.length; i++) {
+                state.you.facedown_table_cards.forEach((_, idx) => {
                     const cardBack = document.createElement('div');
                     cardBack.className = 'card card-back';
+                    cardBack.addEventListener('click', () => playFaceDown(idx));
                     facedownDiv.appendChild(cardBack);
-                }
+                });
 
                 document.getElementById('play-selected').disabled = !isYourTurn;
                 document.getElementById('pickup').disabled = !isYourTurn;

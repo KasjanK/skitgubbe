@@ -408,10 +408,9 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 			gs.Pile = append(gs.Pile, card)
 			pickUpPile(player, gs)
 			fmt.Println("Facedown card too low, picked up pile.")
-			return nil
+		} else {
+			gs.Pile = append(gs.Pile, card)
 		}
-
-		gs.Pile = append(gs.Pile, card)
 
 		if len(player.FacedownTableCards) == 0 {
 			if checkAndHandleWin(player, gs, card) {
