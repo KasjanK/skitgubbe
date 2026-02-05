@@ -70,7 +70,9 @@ func NewGame(players []PlayerState) *GameState {
 		CurrentPlayer: players[rand.Intn(len(players))].ID,
 		Deck: 		   remainingDeck,
 		Pile: 		   nil,
+		Phase: 		   PhaseSetup,
 	}
+
 	for _, player := range game.Players {
 		fmt.Printf("PlayerID: %s\n", player.ID)
 		fmt.Printf("Hand:\n")
@@ -84,6 +86,7 @@ func NewGame(players []PlayerState) *GameState {
 	}
 
 	fmt.Printf("All cards are dealed. Cards left in deck: %v", len(game.Deck))
+	fmt.Printf("Game is in %s phase", PhaseSetup)
 
 	return game
 }
@@ -126,6 +129,7 @@ func VisibleStateFor(gs *GameState, viewer PlayerID) VisibleState {
 
 	return VisibleState{
 		ID: 		   gs.ID,
+		Phase:		   gs.Phase,
 		You: 		   you,
 		Others:		   others,
 		Pile: 		   gs.Pile,
@@ -134,9 +138,6 @@ func VisibleStateFor(gs *GameState, viewer PlayerID) VisibleState {
 }
 
 func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
-	if gs.CurrentPlayer != playerID {
-		return fmt.Errorf("not your turn")
-	}
 	var player *PlayerState
 	
 	for i  := range gs.Players {
@@ -148,6 +149,21 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 
 	if player == nil {
 		return fmt.Errorf("Player not in game")
+	}
+
+	if gs.Phase == PhaseSetup {
+		switch move.Move {
+		case MoveTypeSwapFaceUp:
+			return applySwapFaceUp(player, move)
+		case MoveTypeReadySetup:
+			return applyReadySetup(gs, player)
+		default:
+			return fmt.Errorf("can't do that in setup phase")
+		}
+	}
+
+	if gs.CurrentPlayer != playerID {
+		return fmt.Errorf("not your turn")
 	}
 
 	specialCard := false
@@ -345,7 +361,7 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 
 		chanceCard := gs.Deck[len(gs.Deck) - 1]
 		gs.Deck = slices.Delete(gs.Deck, len(gs.Deck) - 1, len(gs.Deck))		
-		fmt.Printf("Chancecard taken: %v. Cards left: %v", chanceCard, len(gs.Deck))
+		fmt.Printf("Chancecard taken: %v. Cards left: %v\n", chanceCard, len(gs.Deck))
 
 		top := gs.Pile[len(gs.Pile) - 1]
 
@@ -356,20 +372,18 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 
 			// sort hand
 			sort.Slice(player.Hand, func(i, j int) bool {
-			return player.Hand[i].Rank < player.Hand[j].Rank
-		})
+				return player.Hand[i].Rank < player.Hand[j].Rank
+			})
 			fmt.Printf("Chancecard too low, picked up pile. Cards left: %v\n", len(gs.Deck))
-			return nil
-		}
-
-		gs.Pile = append(gs.Pile, chanceCard)
-		fmt.Printf("Chancecard %v played. Cards left: %v\n", chanceCard, len(gs.Deck))
-
-		if chanceCard.Rank == 10 || lastFourSame(gs) {
-			gs.Pile = nil
-			specialCard = true
-		} else if chanceCard.Rank == 2 {
-			specialCard = true
+		} else {
+			gs.Pile = append(gs.Pile, chanceCard)
+			fmt.Printf("Chancecard %v played. Cards left: %v\n", chanceCard, len(gs.Deck))
+			if chanceCard.Rank == 10 || lastFourSame(gs) {
+				gs.Pile = nil
+				specialCard = true
+			} else if chanceCard.Rank == 2 {
+				specialCard = true
+			}
 		}
 	}
 
@@ -513,4 +527,48 @@ func lastFourSame(gs *GameState) bool {
 	}
 	fmt.Printf("four in a row")
 	return true
+}
+
+func applySwapFaceUp(player *PlayerState, move Move) error {
+	if move.Index == nil || len(move.Indices) == 0 {
+		return fmt.Errorf("missing indices")
+	}
+	handIndex := *move.Index
+	tableIndex := move.Indices[0]
+
+	if handIndex < 0 || handIndex >= len(player.Hand) {
+		return fmt.Errorf("invalid hand index")
+	}
+	if tableIndex < 0 || tableIndex >= len(player.FaceupTableCards) {
+		return fmt.Errorf("invalid table index")
+	}
+
+	player.Hand[handIndex], player.FaceupTableCards[tableIndex] =
+	player.FaceupTableCards[tableIndex], player.Hand[handIndex]
+
+	sort.Slice(player.Hand, func(i, j int) bool {
+		return player.Hand[i].Rank < player.Hand[j].Rank
+	})
+	return nil
+}
+
+func applyReadySetup(gs *GameState, player *PlayerState) error {
+	if len(player.FaceupTableCards) != 3 {
+		return fmt.Errorf("you must have 3 face-up cards")
+	}
+
+	player.Ready = true
+
+	allReady := true
+	for i := range gs.Players {
+		if !gs.Players[i].Ready {
+			allReady = false
+			break
+		}
+	}
+
+	if allReady {
+		gs.Phase = PhasePlay
+	}
+	return nil
 }

@@ -55,12 +55,19 @@ type Card struct {
 }
 
 type PlayerID string
+type Phase string
+
+const (
+	PhaseSetup Phase = "setup"
+	PhasePlay  Phase = "play"
+)
 
 type PlayerState struct {
 	ID 	               PlayerID `json:"id"`
 	Hand               []Card   `json:"hand"`
 	FaceupTableCards   []Card	`json:"faceup_table_cards"` 
 	FacedownTableCards []Card   `json:"facedown_table_cards"`
+	Ready 			   bool 	`json:"ready"`
 }
 
 type GameState struct {
@@ -69,6 +76,7 @@ type GameState struct {
 	CurrentPlayer PlayerID		`json:"current_player"`
 	Deck 		  []Card 		`json:"deck"`
 	Pile 		  []Card		`json:"pile"`
+	Phase		  Phase			`json:"phase"`
 }
 
 type Room struct {
@@ -85,10 +93,12 @@ type VisiblePlayer struct {
 	HandSize 			   int 	    `json:"hand_size"`
 	FacedownTableCardsSize int      `json:"facedown_table_cards_size"`
 	OthersFaceupTableCards []Card   `json:"others_faceup_table_cards"` 
+	Ready 				   bool		`json:"ready"`
 }
 
 type VisibleState struct {
 	ID 			 string      	 `json:"id"`
+	Phase 		 Phase		     `json:"phase"`
 	You 		 PlayerState     `json:"you"`
 	Others       []VisiblePlayer `json:"others"`
 	Pile 		 []Card			 `json:"pile"`
@@ -104,6 +114,8 @@ const (
 	MoveTypeChance   	     MoveType = "chance"
 	MoveTypePlayFaceUpCard   MoveType = "play_face_up"
 	MoveTypePlayFaceDownCard MoveType = "play_face_down"
+	MoveTypeSwapFaceUp 	     MoveType = "swap_face_up"
+	MoveTypeReadySetup 		 MoveType = "ready_setup"
 )
 
 type Move struct {
