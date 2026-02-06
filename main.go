@@ -59,7 +59,7 @@ func main() {
 	)
 	
 	//TODO:
-	// - swap faceup cards freely
+	// - be able to select cards when playing face up/down
 	// - if you can play a card from faceup cards, you must pick that card. disable the other cards.
 	
 	//BUGS: 

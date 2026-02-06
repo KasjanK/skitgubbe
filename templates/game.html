@@ -36,6 +36,8 @@
 
             let selectedCards = [];
             let selectedHandIdx = null;
+            let selectedFaceUpIdx = null;
+            let selectedFaceDownIdx = null;
 
             async function refreshGame() {
                 const res = await fetch('/api/games/' + encodeURIComponent(gameId));
@@ -192,7 +194,6 @@
 
                 if (!res.ok) return;
 
-                console.log('swapFaceUp payload', {handIndex, slotIndex });
                 selectedHandIdx = null;
                 await refreshGame();
             }
@@ -219,7 +220,7 @@
                     li.classList.add('card');
                     li.textContent = `${card.rank} ${card.suit}`;
 
-                    const key = `${idx}-${card.rank}-${card.suit}`;
+                    const key = `hand-${idx}-${card.rank}-${card.suit}`;
                     li.dataset.key = key;
                     li.dataset.index = idx;
 
@@ -244,7 +245,23 @@
                     const li = document.createElement('li');
                     li.classList.add('card');
                     li.textContent = `${card.rank} ${card.suit}`;
-                    li.addEventListener('click', () => playFaceUp(idx));
+
+                    const key = `faceup-${idx}-${card.rank}-${card.suit}`;
+                    li.dataset.key = key;
+                    li.dataset.index = idx;
+
+                    if (selectedCards.some(c => c.key === key)) {
+                        li.classList.add('selected');
+                    }
+
+                    if (isYourTurn) {
+                        li.addEventListener('click', () => {
+                            toggleCardSelection(li, card, idx, key);
+                        });
+                    } else {
+                        li.classList.add('disabled');
+                    }
+
                     faceupUl.appendChild(li);
                 });
 
@@ -253,7 +270,22 @@
                 state.you.facedown_table_cards.forEach((_, idx) => {
                     const cardBack = document.createElement('div');
                     cardBack.className = 'card card-back';
-                    cardBack.addEventListener('click', () => playFaceDown(idx));
+
+                    const key = `facedown-${idx}`;
+                    cardBack.dataset.key = key;
+                    cardBack.dataset.index = idx;
+
+                    if (selectedCards.some(c => c.key === key)) {
+                        cardBack.classList.add('selected');
+                    }
+
+                    if (isYourTurn) {
+                        cardBack.addEventListener('click', () => {
+                            toggleCardSelection(cardBack, { rank: null, suit: null, }, idx, key);
+                        });
+                    } else {
+                        cardBack.classList.add('disabled');
+                    }
                     facedownDiv.appendChild(cardBack);
                 });
 
@@ -336,30 +368,10 @@
             }
 
             async function playFaceDown(index) {
-                const res = await fetch(`/api/games/${encodeURIComponent(gameId)}/move`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        type: 'play_face_down',
-                        index,
-                    }),
-                });
-
-                if (!res.ok) return;
                 await refreshGame();
             }
 
             async function playFaceUp(index) {
-                const res = await fetch(`/api/games/${encodeURIComponent(gameId)}/move`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        type: 'play_face_up',
-                        index,
-                    }),
-                });
-
-                if (!res.ok) return;
                 await refreshGame();
             }
 
@@ -398,25 +410,62 @@
 
             async function playSelected() {
                 if (selectedCards.length === 0) return;
-                const indices = selectedCards.map(c => c.index);
 
-                const res = await fetch(`/api/games/${encodeURIComponent(gameId)}/move`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        type: 'play_many',
-                        indices,
-                    }),
-                });
+                const hand = selectedCards.filter(c => c.key.startsWith('hand-'));
+                const faceup = selectedCards.filter(c => c.key.startsWith('faceup-'));
+                const facedown = selectedCards.filter(c => c.key.startsWith('facedown-'));
 
-                if (!res.ok) {
-                    const data = await res.json().catch(() => ({}));
-                    alert(data.error || 'Move failed');
+                const zonesSelected = [hand.length > 0, faceup.length > 0, facedown.length > 0].filter(Boolean).length;
+                if (zonesSelected !== 1) {
                     return;
+                }
+
+                if (hand.length > 0) {
+                    const indices = selectedCards.map(c => c.index);
+
+                    const res = await fetch(`/api/games/${encodeURIComponent(gameId)}/move`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            type: 'play_many',
+                            indices,
+                        }),
+                    });
+
+                    if (!res.ok) {
+                        const data = await res.json().catch(() => ({}));
+                        alert(data.error || 'Move failed');
+                        return;
+                    }
+                } else if (faceup.length > 0) {
+                    const idx = faceup[0].index;
+                    const res = await fetch(`/api/games/${encodeURIComponent(gameId)}/move`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            type: 'play_face_up',
+                            index: idx,
+                        }),
+                    });
+
+                    if (!res.ok) return;
+                } else if (facedown.length > 0) {
+                    const idx = facedown[0].index;
+                    const res = await fetch(`/api/games/${encodeURIComponent(gameId)}/move`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            type: 'play_face_down',
+                            index: idx,
+                        }),
+                    });
+
+                    if (!res.ok) return;
                 }
 
                 selectedCards = [];
                 await refreshGame();
+
             }
             refreshGame();
             setInterval(refreshGame, 1000);
