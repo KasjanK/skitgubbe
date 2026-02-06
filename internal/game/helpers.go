@@ -25,37 +25,37 @@ func ShuffleDeck(deck []Card) {
 	// Fisher-Yates
 	deckLength := len(deck)
 	for i := range deckLength {
-		r := i + rand.Intn(deckLength-i)
+		r := i + rand.Intn(deckLength - i)
 		deck[i], deck[r] = deck[r], deck[i]
 	}
 }
 
-func dealCardsToTarget(players []PlayerState, deck []Card, cardsPerPlayer int, target func(*PlayerState, Card)) []Card {
+func DealCards(players []PlayerState, deck []Card, cardsPerPlayer int) ([]PlayerState, []Card) {
 	idx := 0
 	n := len(players)
 
-	for range cardsPerPlayer {
+	for  range cardsPerPlayer {
 		for player := range n {
-			target(&players[player], deck[idx])
+			players[player].FacedownTableCards = append(players[player].FacedownTableCards, deck[idx])
 			idx++
 		}
 	}
 
-	return deck[idx:]
-}
+	for range cardsPerPlayer {
+		for player := range n {
+			players[player].FaceupTableCards = append(players[player].FaceupTableCards, deck[idx])
+			idx++
+		}
+	}
 
-func DealCards(players []PlayerState, deck []Card, cardsPerPlayer int) ([]PlayerState, []Card) {
-	deck = dealCardsToTarget(players, deck, cardsPerPlayer, func(p *PlayerState, card Card) {
-		p.FacedownTableCards = append(p.FacedownTableCards, card)
-	})
-	deck = dealCardsToTarget(players, deck, cardsPerPlayer, func(p *PlayerState, card Card) {
-		p.FaceupTableCards = append(p.FaceupTableCards, card)
-	})
-	deck = dealCardsToTarget(players, deck, cardsPerPlayer, func(p *PlayerState, card Card) {
-		p.Hand = append(p.Hand, card)
-	})
+	for range cardsPerPlayer {
+		for player := range n {
+			players[player].Hand = append(players[player].Hand, deck[idx])
+			idx++
+		}
+	}
 
-	return players, deck
+	return players, deck[idx:]
 }
 
 func NewGame(players []PlayerState) *GameState {
@@ -64,13 +64,13 @@ func NewGame(players []PlayerState) *GameState {
 	ShuffleDeck(deck)
 	players, remainingDeck := DealCards(players, deck, 3)
 
-	game := &GameState{
-		ID:            gameID.String(),
+	game := &GameState {
+		ID: 		   gameID.String(),
 		Players:       players,
 		CurrentPlayer: players[rand.Intn(len(players))].ID,
-		Deck:          remainingDeck,
-		Pile:          nil,
-		Phase:         PhaseSetup,
+		Deck: 		   remainingDeck,
+		Pile: 		   nil,
+		Phase: 		   PhaseSetup,
 	}
 
 	for _, player := range game.Players {
@@ -93,13 +93,13 @@ func NewGame(players []PlayerState) *GameState {
 
 func NewRoom(ownerID PlayerID) *Room {
 	roomID := uuid.New()
-
+	
 	players := []PlayerState{
 		{ID: ownerID},
 	}
 
-	room := &Room{
-		ID:      roomID.String(),
+	room := &Room {
+		ID:		 roomID.String(),
 		OwnerID: ownerID,
 		Players: players,
 		Ready:   make(map[PlayerID]bool),
@@ -112,15 +112,15 @@ func NewRoom(ownerID PlayerID) *Room {
 
 func VisibleStateFor(gs *GameState, viewer PlayerID) VisibleState {
 	var you PlayerState
-	others := make([]VisiblePlayer, 0, len(gs.Players)-1)
+	others := make([]VisiblePlayer, 0, len(gs.Players) - 1)
 
 	for _, player := range gs.Players {
 		if player.ID == viewer {
 			you = player
 		} else {
 			others = append(others, VisiblePlayer{
-				ID:                     player.ID,
-				HandSize:               len(player.Hand),
+				ID: 	player.ID,
+				HandSize: len(player.Hand),
 				FacedownTableCardsSize: len(player.FacedownTableCards),
 				OthersFaceupTableCards: player.FaceupTableCards,
 			})
@@ -128,87 +128,24 @@ func VisibleStateFor(gs *GameState, viewer PlayerID) VisibleState {
 	}
 
 	return VisibleState{
-		ID:            gs.ID,
-		Phase:         gs.Phase,
-		You:           you,
-		Others:        others,
-		Pile:          gs.Pile,
+		ID: 		   gs.ID,
+		Phase:		   gs.Phase,
+		You: 		   you,
+		Others:		   others,
+		Pile: 		   gs.Pile,
 		CurrentPlayer: gs.CurrentPlayer,
 	}
 }
 
-func findPlayerByID(gs *GameState, playerID PlayerID) *PlayerState {
-	for i := range gs.Players {
-		if gs.Players[i].ID == playerID {
-			return &gs.Players[i]
-		}
-	}
-	return nil
-}
-
-func isSpecialCard(card Card) bool {
-	return card.Rank == 2 || card.Rank == 10 || card.Rank == 14
-}
-
-func canPlayCardOnPile(card Card, pile []Card) bool {
-	if len(pile) == 0 {
-		return true
-	}
-	top := pile[len(pile)-1]
-	return card.Rank >= top.Rank || card.Rank == 10 || card.Rank == 2
-}
-
-func drawCardsFromDeck(player *PlayerState, gs *GameState, targetCount int) {
-	for len(player.Hand) < targetCount && len(gs.Deck) > 0 {
-		player.Hand = append(player.Hand, gs.Deck[len(gs.Deck)-1])
-		gs.Deck = slices.Delete(gs.Deck, len(gs.Deck)-1, len(gs.Deck))
-	}
-	fmt.Printf("Cards left in deck: %v", len(gs.Deck))
-}
-
-func sortPlayerHand(player *PlayerState) {
-	sort.Slice(player.Hand, func(i, j int) bool {
-		return player.Hand[i].Rank < player.Hand[j].Rank
-	})
-}
-
-func pickUpPile(player *PlayerState, gs *GameState) {
-	if len(gs.Pile) > 0 {
-		player.Hand = append(player.Hand, gs.Pile...)
-		gs.Pile = nil
-		sortPlayerHand(player)
-	}
-}
-
-func checkAndHandleWin(player *PlayerState, gs *GameState, lastCard Card) bool {
-	if len(player.Hand) == 0 && len(player.FaceupTableCards) == 0 && len(player.FacedownTableCards) == 0 {
-		if isSpecialCard(lastCard) {
-			fmt.Println("You can't go out on a special card.")
-			pickUpPile(player, gs)
-			return true
-		}
-		fmt.Printf("Player %s won\n", player.ID)
-		for i, p := range gs.Players {
-			if p.ID == player.ID {
-				gs.Players = slices.Delete(gs.Players, i, i+1)
-				break
-			}
-		}
-		return true
-	}
-	return false
-}
-
-func handleSpecialCardEffects(card Card, gs *GameState) bool {
-	if card.Rank == 10 || lastFourSame(gs) {
-		gs.Pile = nil
-		return true
-	}
-	return card.Rank == 2
-}
-
 func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
-	player := findPlayerByID(gs, playerID)
+	var player *PlayerState
+	
+	for i  := range gs.Players {
+		if gs.Players[i].ID == playerID {
+			player = &gs.Players[i]
+			break
+		}
+	}
 
 	if player == nil {
 		return fmt.Errorf("Player not in game")
@@ -229,7 +166,7 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 		return fmt.Errorf("not your turn")
 	}
 
-	var specialCard bool
+	specialCard := false
 
 	if move.Move == MoveTypePlayCard {
 		// check for card in hand
@@ -244,26 +181,64 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 			return fmt.Errorf("Card not in hand")
 		}
 
-		// check pile
+		// check pile 
 		if len(gs.Pile) == 0 {
 			log.Printf("Pile is empty, card %v played", *move.Card)
-		} else if !canPlayCardOnPile(*move.Card, gs.Pile) {
-			return fmt.Errorf("Card too low")
+		} else {
+			top := gs.Pile[len(gs.Pile) - 1]
+			if move.Card.Rank < top.Rank && move.Card.Rank != 10 && move.Card.Rank != 2 {
+				return fmt.Errorf("Card too low")
+			}
 		}
-
+		
 		// apply move
-		player.Hand = slices.Delete(player.Hand, idx, idx+1)
+		player.Hand = slices.Delete(player.Hand, idx, idx + 1)
 		gs.Pile = append(gs.Pile, *move.Card)
 		log.Printf("Card %v played by %v", *move.Card, player.ID)
 
 		// draw card after move
-		drawCardsFromDeck(player, gs, 3)
-
-		if checkAndHandleWin(player, gs, gs.Pile[len(gs.Pile)-1]) {
-			return nil
+		if len(player.Hand) < 3 {
+			for i := 0; i < (3 - len(player.Hand)); i++ {
+				if len(gs.Deck) == 0 {
+					break 
+				}
+				player.Hand = append(player.Hand, gs.Deck[len(gs.Deck) - 1])
+				gs.Deck = slices.Delete(gs.Deck, len(gs.Deck) - 1, len(gs.Deck))
+				fmt.Printf("Cards left in deck: %v", len(gs.Deck))
+			}
 		}
 
-		if handleSpecialCardEffects(*move.Card, gs) {
+		if len(player.Hand) == 0 &&
+		len(player.FaceupTableCards) == 0 &&
+		len(player.FacedownTableCards) == 0 {
+
+			last := gs.Pile[len(gs.Pile)-1] 
+
+			isSpecialOrAce := last.Rank == 2 || last.Rank == 10 || last.Rank == 14
+			if isSpecialOrAce {
+				fmt.Println("You can't go out on a special card.")
+
+				if len(gs.Pile) > 0 {
+					player.Hand = append(player.Hand, gs.Pile...)
+					gs.Pile = nil
+				}
+				return nil
+			}
+
+			fmt.Printf("Player %s won\n", player.ID)
+			for i, p := range gs.Players {
+				if p.ID == player.ID {
+					gs.Players = slices.Delete(gs.Players, i, i+1)
+					break
+				}
+			}
+			return nil
+		}	
+
+		if move.Card.Rank == 10 || lastFourSame(gs) {
+			gs.Pile = nil
+			specialCard = true
+		} else if move.Card.Rank == 2 {
 			specialCard = true
 		}
 	}
@@ -284,7 +259,7 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 				return fmt.Errorf("invalid index: %d", idx)
 			}
 
-			card := player.Hand[idx]
+		    card := player.Hand[idx]
 
 			if i == 0 {
 				rank = card.Rank
@@ -294,29 +269,70 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 		}
 
 		// check pile
-		if len(gs.Pile) > 0 && !canPlayCardOnPile(Card{Rank: rank}, gs.Pile) {
-			return fmt.Errorf("Card too low")
+		if len(gs.Pile) > 0 {
+			top := gs.Pile[len(gs.Pile) - 1]
+		    if rank < top.Rank && rank != 10 && rank != 2 {
+				return fmt.Errorf("Card too low")
+			}
 		}
 
 		// remove from hand and add to pile
 		for _, idx := range idxs {
 			card := player.Hand[idx]
 			gs.Pile = append(gs.Pile, card)
-			player.Hand = slices.Delete(player.Hand, idx, idx+1)
+			player.Hand = slices.Delete(player.Hand, idx, idx + 1)
 		}
 
 		// draw card after move
-		drawCardsFromDeck(player, gs, 3)
-
-		// sort hand
-		sortPlayerHand(player)
-
-		// check if player won
-		if checkAndHandleWin(player, gs, gs.Pile[len(gs.Pile)-1]) {
-			return nil
+		if len(player.Hand) < 3 {
+			need := 3 - len(player.Hand)
+			for i := 0; i < need; i++ {
+				if len(gs.Deck) == 0 {
+					break 
+				}
+				player.Hand = append(player.Hand, gs.Deck[len(gs.Deck) - 1])
+				gs.Deck = slices.Delete(gs.Deck, len(gs.Deck) - 1, len(gs.Deck))
+				fmt.Printf("Cards left in deck: %v", len(gs.Deck))
+			}
 		}
 
-		if handleSpecialCardEffects(Card{Rank: rank}, gs) {
+		// sort hand
+		sort.Slice(player.Hand, func(i, j int) bool {
+			return player.Hand[i].Rank < player.Hand[j].Rank
+		})
+
+		// check if player won 
+		if len(player.Hand) == 0 &&
+		len(player.FaceupTableCards) == 0 &&
+		len(player.FacedownTableCards) == 0 {
+
+			last := gs.Pile[len(gs.Pile)-1] 
+
+			isSpecialOrAce := last.Rank == 2 || last.Rank == 10 || last.Rank == 14
+			if isSpecialOrAce {
+				fmt.Println("You can't go out on a special card.")
+
+				if len(gs.Pile) > 0 {
+					player.Hand = append(player.Hand, gs.Pile...)
+					gs.Pile = nil
+				}
+				return nil
+			}
+
+			fmt.Printf("Player %s won\n", player.ID)
+			for i, p := range gs.Players {
+				if p.ID == player.ID {
+					gs.Players = slices.Delete(gs.Players, i, i+1)
+					break
+				}
+			}
+			return nil
+		}	
+
+		if rank == 10 || lastFourSame(gs) {
+			gs.Pile = nil
+			specialCard = true
+		} else if rank == 2 {
 			specialCard = true
 		}
 	}
@@ -325,7 +341,13 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 		if len(gs.Pile) == 0 {
 			return fmt.Errorf("Pile is empty, nothing to pick up")
 		}
-		pickUpPile(player, gs)
+		player.Hand = append(player.Hand, gs.Pile...)
+		gs.Pile = nil
+
+		// sort hand
+		sort.Slice(player.Hand, func(i, j int) bool {
+			return player.Hand[i].Rank < player.Hand[j].Rank
+		})
 	}
 
 	if move.Move == MoveTypeChance {
@@ -337,18 +359,29 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 			return fmt.Errorf("Deck is empty, no cards left")
 		}
 
-		chanceCard := gs.Deck[len(gs.Deck)-1]
-		gs.Deck = slices.Delete(gs.Deck, len(gs.Deck)-1, len(gs.Deck))
+		chanceCard := gs.Deck[len(gs.Deck) - 1]
+		gs.Deck = slices.Delete(gs.Deck, len(gs.Deck) - 1, len(gs.Deck))		
 		fmt.Printf("Chancecard taken: %v. Cards left: %v\n", chanceCard, len(gs.Deck))
 
-		if !canPlayCardOnPile(chanceCard, gs.Pile) {
+		top := gs.Pile[len(gs.Pile) - 1]
+
+		if chanceCard.Rank < top.Rank && chanceCard.Rank != 10 && chanceCard.Rank != 2 {
 			gs.Pile = append(gs.Pile, chanceCard)
-			pickUpPile(player, gs)
+			player.Hand = append(player.Hand, gs.Pile...)
+			gs.Pile = nil
+
+			// sort hand
+			sort.Slice(player.Hand, func(i, j int) bool {
+				return player.Hand[i].Rank < player.Hand[j].Rank
+			})
 			fmt.Printf("Chancecard too low, picked up pile. Cards left: %v\n", len(gs.Deck))
 		} else {
 			gs.Pile = append(gs.Pile, chanceCard)
 			fmt.Printf("Chancecard %v played. Cards left: %v\n", chanceCard, len(gs.Deck))
-			if handleSpecialCardEffects(chanceCard, gs) {
+			if chanceCard.Rank == 10 || lastFourSame(gs) {
+				gs.Pile = nil
+				specialCard = true
+			} else if chanceCard.Rank == 2 {
 				specialCard = true
 			}
 		}
@@ -370,18 +403,29 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 		}
 
 		card := player.FaceupTableCards[idx]
-		player.FaceupTableCards = slices.Delete(player.FaceupTableCards, idx, idx+1)
+		player.FaceupTableCards = slices.Delete(player.FaceupTableCards, idx, idx + 1)
 
 		if len(gs.Pile) == 0 {
 			gs.Pile = append(gs.Pile, card)
-		} else if !canPlayCardOnPile(card, gs.Pile) {
-			gs.Pile = append(gs.Pile, card)
-			pickUpPile(player, gs)
 		} else {
-			gs.Pile = append(gs.Pile, card)
+			top := gs.Pile[len(gs.Pile)-1]
+			if card.Rank < top.Rank && card.Rank != 10 && card.Rank != 2 {
+				gs.Pile = append(gs.Pile, card)
+				player.Hand = append(player.Hand, gs.Pile...)
+				// sort hand
+				sort.Slice(player.Hand, func(i, j int) bool {
+					return player.Hand[i].Rank < player.Hand[j].Rank
+				})
+				gs.Pile = nil
+			} else {
+				gs.Pile = append(gs.Pile, card)
+			}
 		}
 
-		if handleSpecialCardEffects(card, gs) {
+		if card.Rank == 10 || lastFourSame(gs) {
+			gs.Pile = nil
+			specialCard = true
+		} else if card.Rank == 2 {
 			specialCard = true
 		}
 	}
@@ -402,27 +446,54 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 
 		card := player.FacedownTableCards[idx]
 		fmt.Printf("Facedown card %v played.", card)
-		player.FacedownTableCards = slices.Delete(player.FacedownTableCards, idx, idx+1)
-
-		if len(gs.Pile) > 0 && !canPlayCardOnPile(card, gs.Pile) {
-			gs.Pile = append(gs.Pile, card)
-			pickUpPile(player, gs)
-			fmt.Println("Facedown card too low, picked up pile.")
-		} else {
-			gs.Pile = append(gs.Pile, card)
-		}
-
-		if len(player.FacedownTableCards) == 0 {
-			if checkAndHandleWin(player, gs, card) {
-				return nil
+		player.FacedownTableCards = slices.Delete(player.FacedownTableCards, idx, idx + 1)
+		if len(gs.Pile) > 0 {
+			top := gs.Pile[len(gs.Pile) - 1]
+			if card.Rank < top.Rank && card.Rank != 10 && card.Rank != 2 {
+				gs.Pile = append(gs.Pile, card)
+				player.Hand = append(player.Hand, gs.Pile...)
+				gs.Pile = nil
+				// sort hand
+				sort.Slice(player.Hand, func(i, j int) bool {
+					return player.Hand[i].Rank < player.Hand[j].Rank
+				})
+				fmt.Println("Facedown card too low, picked up pile.")
+			} else {
+				gs.Pile = append(gs.Pile, card)
 			}
 		}
 
-		if handleSpecialCardEffects(card, gs) {
+		if len(player.FacedownTableCards) == 0 {
+			isSpecialOrAce := card.Rank == 2 || card.Rank == 10 || card.Rank == 14
+
+			if isSpecialOrAce {
+				fmt.Println("You can't go out on a special card.")
+				if len(gs.Pile) > 0 {
+					player.Hand = append(player.Hand, gs.Pile...)
+					gs.Pile = nil
+					return nil
+				}
+				return nil
+			}
+
+			fmt.Printf("Player %s won", player.ID)
+			for i, p := range gs.Players {
+				if player.ID == p.ID {
+					gs.Players = slices.Delete(gs.Players, i, i + 1)
+					break
+				}
+			}
+			return nil
+		}
+
+		if card.Rank == 10 || lastFourSame(gs) {
+			gs.Pile = nil
+			specialCard = true
+		} else if card.Rank == 2 {
 			specialCard = true
 		}
 	}
-
+	
 	if !specialCard {
 		advanceTurn(gs)
 	}
@@ -447,7 +518,7 @@ func lastFourSame(gs *GameState) bool {
 		return false
 	}
 
-	last := gs.Pile[len(gs.Pile)-1]
+	last := gs.Pile[len(gs.Pile) - 1]
 	for i := len(gs.Pile) - 4; i < len(gs.Pile); i++ {
 		if gs.Pile[i].Rank != last.Rank {
 			return false
@@ -472,9 +543,11 @@ func applySwapFaceUp(player *PlayerState, move Move) error {
 	}
 
 	player.Hand[handIndex], player.FaceupTableCards[tableIndex] =
-		player.FaceupTableCards[tableIndex], player.Hand[handIndex]
+	player.FaceupTableCards[tableIndex], player.Hand[handIndex]
 
-	sortPlayerHand(player)
+	sort.Slice(player.Hand, func(i, j int) bool {
+		return player.Hand[i].Rank < player.Hand[j].Rank
+	})
 	return nil
 }
 
