@@ -59,9 +59,11 @@ func main() {
 	)
 	
 	//TODO:
-	// - be able to select cards when playing face up/down
-	// - if you can play a card from faceup cards, you must pick that card. disable the other cards.
-	
+	// - end game properly, remove game after ending, redirect players after.
+	// - show statistics, everyones places.
+	// - change to advance turn after playing a 2
+	// - DESIGN THE SITE!!!!
+
 	//BUGS: 
 
 	mux.HandleFunc("POST /api/login", cfg.handlerLogin)
