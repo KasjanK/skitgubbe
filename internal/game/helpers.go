@@ -463,35 +463,40 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 			}
 		}
 
-		if len(player.FacedownTableCards) == 0 {
-			isSpecialOrAce := card.Rank == 2 || card.Rank == 10 || card.Rank == 14
-
-			if isSpecialOrAce {
-				fmt.Println("You can't go out on a special card.")
-				if len(gs.Pile) > 0 {
-					player.Hand = append(player.Hand, gs.Pile...)
-					gs.Pile = nil
-					return nil
-				}
-				return nil
-			}
-
-			fmt.Printf("Player %s won", player.ID)
-			for i, p := range gs.Players {
-				if player.ID == p.ID {
-					gs.Players = slices.Delete(gs.Players, i, i + 1)
-					break
-				}
-			}
-			return nil
-		}
-
 		if card.Rank == 10 || lastFourSame(gs) {
 			gs.Pile = nil
 			specialCard = true
 		} else if card.Rank == 2 {
 			specialCard = true
 		}
+
+		// check if player won 
+		if len(player.Hand) == 0 &&
+		len(player.FaceupTableCards) == 0 &&
+		len(player.FacedownTableCards) == 0 {
+
+			last := gs.Pile[len(gs.Pile)-1] 
+
+			isSpecialOrAce := last.Rank == 2 || last.Rank == 10 || last.Rank == 14
+			if isSpecialOrAce {
+				fmt.Println("You can't go out on a special card.")
+
+				if len(gs.Pile) > 0 {
+					player.Hand = append(player.Hand, gs.Pile...)
+					gs.Pile = nil
+				}
+				return nil
+			}
+
+			fmt.Printf("Player %s won\n", player.ID)
+			for i, p := range gs.Players {
+				if p.ID == player.ID {
+					gs.Players = slices.Delete(gs.Players, i, i+1)
+					break
+				}
+			}
+			return nil
+		}	
 	}
 	
 	if !specialCard {
