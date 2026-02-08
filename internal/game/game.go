@@ -77,6 +77,8 @@ type GameState struct {
 	Deck 		  []Card 		`json:"deck"`
 	Pile 		  []Card		`json:"pile"`
 	Phase		  Phase			`json:"phase"`
+	Finished	  bool			`json:"finished"`
+	Winners 	  []PlayerID 	`json:"winners"`
 }
 
 type Room struct {
@@ -99,6 +101,8 @@ type VisiblePlayer struct {
 type VisibleState struct {
 	ID 			 string      	 `json:"id"`
 	Phase 		 Phase		     `json:"phase"`
+	Finished 	 bool			 `json:"finished"`
+	Winners 	 []PlayerID   	 `json:"winners"`
 	You 		 PlayerState     `json:"you"`
 	Others       []VisiblePlayer `json:"others"`
 	Pile 		 []Card			 `json:"pile"`

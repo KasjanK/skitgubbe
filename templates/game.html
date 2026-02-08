@@ -46,16 +46,19 @@
                 const state = await res.json();
 
                 document.getElementById('phase').textContent = 
+                    state.finished ? 'Game over' :
                     state.phase === 'setup' ? 'Phase: Setup' : 'Phase: Play';
 
                 const isYourTurn = state.current_player === state.you.id;
                 document.getElementById('current-player').textContent =
-                    isYourTurn ? 'Your turn' : `Waiting for ${state.current_player}`;
+                    state.finished 
+                        ? 'Game finished'
+                        : isYourTurn 
+                        ? 'Your turn' 
+                        : `Waiting for ${state.current_player}`;
 
                 renderPile(state);
 
-                console.log('phase from backend: ', state.phase);
-                console.log('typeof renderSetup:', typeof renderSetup);
                 if (state.phase === 'setup') {
                     renderSetup(state);
                 } else {
@@ -63,6 +66,7 @@
                 }
 
                 renderOthers(state);
+                renderWinners(state);
             }
 
             function renderPile(state) {

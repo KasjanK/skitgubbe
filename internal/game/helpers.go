@@ -71,6 +71,8 @@ func NewGame(players []PlayerState) *GameState {
 		Deck: 		   remainingDeck,
 		Pile: 		   nil,
 		Phase: 		   PhaseSetup,
+		Finished:	   false,
+		Winners: 	   nil,
 	}
 
 	for _, player := range game.Players {
@@ -112,7 +114,7 @@ func NewRoom(ownerID PlayerID) *Room {
 
 func VisibleStateFor(gs *GameState, viewer PlayerID) VisibleState {
 	var you PlayerState
-	others := make([]VisiblePlayer, 0, len(gs.Players) - 1)
+	others := make([]VisiblePlayer, 0, len(gs.Players))
 
 	for _, player := range gs.Players {
 		if player.ID == viewer {
@@ -130,6 +132,8 @@ func VisibleStateFor(gs *GameState, viewer PlayerID) VisibleState {
 	return VisibleState{
 		ID: 		   gs.ID,
 		Phase:		   gs.Phase,
+		Finished: 	   gs.Finished,
+		Winners:       gs.Winners,
 		You: 		   you,
 		Others:		   others,
 		Pile: 		   gs.Pile,
@@ -226,11 +230,21 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 			}
 
 			fmt.Printf("Player %s won\n", player.ID)
+
+			gs.Winners = append(gs.Winners, player.ID)
+
 			for i, p := range gs.Players {
 				if p.ID == player.ID {
 					gs.Players = slices.Delete(gs.Players, i, i+1)
 					break
 				}
+			}
+
+			if len(gs.Players) == 1 {
+				lastPlayerID := gs.Players[0].ID
+				gs.Winners = append(gs.Winners, lastPlayerID)
+				gs.Players = nil
+				gs.Finished = true
 			}
 			return nil
 		}	
@@ -320,11 +334,20 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 			}
 
 			fmt.Printf("Player %s won\n", player.ID)
+			gs.Winners = append(gs.Winners, player.ID)
+
 			for i, p := range gs.Players {
 				if p.ID == player.ID {
 					gs.Players = slices.Delete(gs.Players, i, i+1)
 					break
 				}
+			}
+
+			if len(gs.Players) == 1 {
+				lastPlayerID := gs.Players[0].ID
+				gs.Winners = append(gs.Winners, lastPlayerID)
+				gs.Players = nil
+				gs.Finished = true
 			}
 			return nil
 		}	
@@ -489,11 +512,21 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 			}
 
 			fmt.Printf("Player %s won\n", player.ID)
+		    	
+			gs.Winners = append(gs.Winners, player.ID)
+
 			for i, p := range gs.Players {
 				if p.ID == player.ID {
 					gs.Players = slices.Delete(gs.Players, i, i+1)
 					break
 				}
+			}
+
+			if len(gs.Players) == 1 {
+				lastPlayerID := gs.Players[0].ID
+				gs.Winners = append(gs.Winners, lastPlayerID)
+				gs.Players = nil
+				gs.Finished = true
 			}
 			return nil
 		}	
@@ -506,6 +539,15 @@ func ApplyMove(gs *GameState, playerID PlayerID, move Move) error {
 }
 
 func advanceTurn(gs *GameState) {
+	if gs.Finished || len(gs.Players) == 0 {
+		return 
+	}
+	
+	if len(gs.Players) == 1 {
+		gs.CurrentPlayer = gs.Players[0].ID
+		return
+	}
+
 	idx := 0
 	for i, player := range gs.Players {
 		if player.ID == gs.CurrentPlayer {
