@@ -29,7 +29,10 @@
 
         <h2>Other players</h2>
         <div id="other-hands"></div>
-        
+
+        <h2>Standings</h2>
+        <div id="standings"></div>
+
         <script>
             const gameId = window.location.pathname.split('/')[2]; // /game/{id}
             document.getElementById('game-id').innerHTML = gameId
@@ -471,6 +474,33 @@
                 await refreshGame();
 
             }
+            function renderWinners(state) {
+                const standingsEl = document.getElementById('standings');
+                standingsEl.innerHTML = '';
+
+                if (!state.winners || state.winners.length === 0) {
+                    const msg = document.createElement('div');
+                    msg.textContent = 'No winners yet';
+                    standingsEl.appendChild(msg);
+                    return;
+                }
+
+                state.winners.forEach((playerId, index) => {
+                    const div = document.createElement('div');
+                    const place = index + 1;
+                    let placeText = place + 'th';
+                    if (place === 1) placeText = '1st';
+                    else if (place === 2) placeText = '2nd';
+                    else if (place === 3) placeText = '3rd';
+
+                    div.textContent = `${placeText}: ${playerId}`;
+                    if (playerId === state.you.id) {
+                        div.textContent += ' (you)';
+                    }
+                    standingsEl.appendChild(div);
+                });
+            }
+
             refreshGame();
             setInterval(refreshGame, 1000);
         </script>
