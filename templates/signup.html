@@ -1,49 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Sign Up</title>
-        <link rel="stylesheet" href="static/css/style.css" />
-    </head>
-    <body>
-        <div class="auth-container">
-            <h2>Create Account</h2>
-            <p class="subtitle">Sign up to get started</p>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SKITGUBBE — Signup</title>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="game-title">SKITGUBBE</div>
+    <div class="game-subtitle">♠ CREATE ACCOUNT ♥</div>
 
-            <form id="auth-form" class="auth-form">
-                <input type="email" placeholder="Email" id="email" required />
-                <input type="password" placeholder="Password" id="password" required />
+    <div class="card-deco">
+      <div class="deco-card">♥</div>
+      <div class="deco-card">♠</div>
+      <div class="deco-card">♦</div>
+      <div class="deco-card">♣</div>
+    </div>
 
-                <button type="submit">Sign Up</button>
-            </form>
+    <div class="panel">
+      <div class="section-label">New Player</div>
+      <div class="pixel-divider"></div>
 
-            <p class="switch">
-            Already have an account?
-            <a href="login.html">Login</a>
-            </p>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input id="email" name="email" class="input-field" type="text" placeholder="Email" autocomplete="email" required/>
         </div>
-        <script>
-            document.getElementById('auth-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input id="password" name="password" class="input-field" type="password" placeholder="••••••••" autocomplete="current-password" required/>
+        </div>
 
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('password').value;
+        <div id="error-msg" class="error-msg"></div>
 
-                const res = await fetch('/api/signup', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ email, password }),
-                });
+        <div class="form-actions">
+          <button type="submit" class="btn btn-gold" id="submit-btn">▶ CREATE ACCOUNT</button>
+        </div>
+      </form>
+    <div class="switch-link">Already have an account? <a href="/login">LOG IN</a></div>
+    </div>
+  </div>
 
-                if (res.ok) {
-                    window.location = '/login';
-                    return;
-                }
+  <script src="/static/js/common.js"></script>
+  <script>
+    const form      = document.getElementById('login-form');
+    const errEl     = document.getElementById('error-msg');
+    const submitBtn = document.getElementById('submit-btn');
 
-                const data = await res.json().catch(() => ({}));
-                document.getElementById('error').textContent = data.error || 'Signup failed';
-            });
-        </script>
-    </body>
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errEl.style.display = 'none';
+      submitBtn.disabled = true;
+      submitBtn.textContent = '⏳ CREATING...';
+
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        await API.post('/api/signup', { email, password });
+        window.location.href = '/login';
+      } catch (err) {
+        errEl.textContent = err.message || 'Signup failed. Try again.';
+        errEl.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = '▶ CREATE ACCOUNT';
+      }
+    });
+  </script>
+</body>
 </html>
