@@ -1,49 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Login</title>
-        <link rel="stylesheet" href="/static/css/style.css" />
-    </head>
-    <body>
-        <div class="auth-container">
-            <h2>Welcome Back</h2>
-            <p class="subtitle">Please sign in to your account</p>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SKITGUBBE — Login</title>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="game-title">SKITGUBBE</div>
+    <div class="game-subtitle">♠ THE CARD GAME ♥</div>
 
-            <form id="auth-form" class="auth-form">
-                <input type="email" name="email" id="email"required />
-                <input type="password" name="password" id="password" required />
+    <div class="card-deco">
+      <div class="deco-card">♥</div>
+      <div class="deco-card">♠</div>
+      <div class="deco-card">♦</div>
+      <div class="deco-card">♣</div>
+    </div>
 
-                <button type="submit">Log in</button>
-                <div id="error" style="color:red;"></div>
-            </form>
-            <p class="switch">
-            Don’t have an account?
-            <a href="/signup">Sign up</a>
-            </p>
+    <div class="panel">
+      <div class="section-label">Player Login</div>
+      <div class="pixel-divider"></div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input id="email" name="email" class="input-field" type="text" placeholder="ENTER NAME..." autocomplete="email" required/>
         </div>
-        <script>
-            document.getElementById('auth-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input id="password" name="password" class="input-field" type="password" placeholder="••••••••" autocomplete="current-password" required/>
+        </div>
 
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('password').value;
+        <div id="error-msg" class="error-msg"></div>
 
-                const res = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ email, password }),
-                });
+        <div class="form-actions">
+          <button type="submit" class="btn btn-gold" id="submit-btn">▶ ENTER GAME</button>
+        </div>
+      </form>
+    <div class="switch-link">No account? <a href="/signup">SIGN UP</a></div>
+    </div>
 
-                if (res.ok) {
-                    window.location = '/dashboard';
-                    return;
-                }
+  </div>
 
-                const data = await res.json().catch(() => ({}));
-                document.getElementById('error').textContent = data.error || 'Login failed';
-            });
-        </script>
-    </body>
+  <script src="/static/js/common.js"></script>
+  <script>
+    const form      = document.getElementById('login-form');
+    const errEl     = document.getElementById('error-msg');
+    const submitBtn = document.getElementById('submit-btn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errEl.style.display = 'none';
+      submitBtn.disabled = true;
+      submitBtn.textContent = '⏳ LOADING...';
+
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        await API.post('/api/login', { email, password });
+        window.location.href = '/dashboard';
+      } catch (err) {
+        errEl.textContent = err.message || 'Login failed. Try again.';
+        errEl.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = '▶ ENTER GAME';
+      }
+    });
+  </script>
+</body>
 </html>
