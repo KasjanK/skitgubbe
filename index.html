@@ -1,17 +1,192 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>Signup</title>
-        <script src="https://cdn.tailwindcss.com"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>SKITGUBBE - The Card Game</title>
+        <style>
+:root {
+    --green: #1a4a2e;
+    --green-light: #2d6e45;
+    --green-dark: #0e2d1b;
+    --felt: #1e5c38;
+    --gold: #f0c040;
+    --gold-dark: #c49a20;
+    --red: #c0392b;
+    --red-bright: #e74c3c;
+    --cream: #f5e6c8;
+    --cream-dark: #ddd0a8;
+    --brown: #6b4c2a;
+    --shadow: #0a1f11;
+    --pixel-border: 3px solid #000;
+    --pixel-shadow: 4px 4px 0px #000;
+    --card-width: 72px;
+    --card-height: 100px;
+}
+        body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+
+        .landing-wrap {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+        }
+
+        .game-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 22px;
+            color: black;
+            text-align: center;
+            margin-bottom: 6px;
+            text-shadow: 4px 4px 0 #000;
+            animation: pixelFloat 3s ease-in-out infinite;
+            line-height: 1.4;
+        }
+
+        .game-subtitle {
+            font-family: 'Special Elite', 'Courier New', monospace;
+            font-size: 20px;
+            color: black;
+            text-align: center;
+            margin-bottom: 32px;
+            letter-spacing: 3px;
+        }
+
+        .card-deco {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 28px;
+        }
+
+        .deco-card {
+            width: 48px;
+            height: 68px;
+            background: var(--cream);
+            border: 3px solid #000;
+            border-radius: 4px;
+            box-shadow: 3px 3px 0 #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+        .deco-card:nth-child(1) { transform: rotate(-12deg); color: var(--red); }
+        .deco-card:nth-child(2) { transform: rotate(-4deg) translateY(-6px); color: #1a1a2e; }
+        .deco-card:nth-child(3) { transform: rotate(4deg); color: var(--red); }
+        .deco-card:nth-child(4) { transform: rotate(12deg) translateY(-4px); color: #1a1a2e; }
+
+        .btn {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            padding: 12px 20px;
+            border: 3px solid #000;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.07s, box-shadow 0.07s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-block;
+            text-decoration: none;
+            user-select: none;
+            image-rendering: pixelated;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            right: -6px;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: -1;
+            border: 3px solid #000;
+        }
+
+        .btn:active {
+            transform: translate(3px, 3px);
+            box-shadow: none;
+        }
+        .btn:active::after {
+            bottom: -3px;
+            right: -3px;
+        }
+
+        .btn-gold {
+            background: var(--gold);
+            color: #000;
+        }
+
+        .btn-white {
+            background: white;
+            color: black;
+        }
+        .btn-green:hover { background: #3a8a55; }
+
+        .btn-gray {
+            background: #555;
+            color: #aaa;
+            cursor: not-allowed;
+        }
+
+        .cta-buttons {
+            font-family: 'Press Start 2P', monospace;
+            display: flex;
+            flex-direction: row-reverse;
+            gap: 14px;
+            margin-top: 4px;
+        }
+        .cta-buttons .btn {
+            width: 100%;
+            text-align: center;
+            display: block;
+            text-decoration: none;
+        }
+
+        .tagline {
+            font-family: 'Press Start 2P', monospace;
+            text-align: center;
+            font-size: 16px;
+            color: black;
+            line-height: 1.9;
+            margin-top: 4px;
+        }
+        .tagline em {
+            color: black;
+            font-style: normal;
+        }
+        </style>
     </head>
-    <body class="bg-slate text-black">
-        <form>
-            <label for="email">Email:</label>
-            <input type="email"><br>
-            <label for="password">Password:</label>
-            <input type="password"><br>
-            <button href="api/login">Login</button>
-            <button>Signup</button>
-        </form>
+    <body>
+        <div class="landing-wrap">
+            <div class="game-title">SKITGUBBE</div>
+            <div class="game-subtitle">♠ THE CARD GAME ♥</div>
+
+            <div class="card-deco">
+                <div class="deco-card">♥</div>
+                <div class="deco-card">♠</div>
+                <div class="deco-card">♦</div>
+                <div class="deco-card">♣</div>
+            </div>
+
+            <div class="panel">
+                <div class="pixel-divider"></div>
+
+                <div class="tagline">
+                    The classic Swedish shedding game.<br/>
+                    Play your cards. Clear your hand.<br/>
+                    <em>Don't be the last one holding.</em>
+                </div>
+
+                <div style="margin-top: 24px;">
+                    <div class="pixel-divider"></div>
+                </div>
+
+                <div class="cta-buttons">
+                    <a href="/signup" class="btn btn-white">CREATE ACCOUNT</a>
+                    <a href="/login"  class="btn btn-gold">LOG IN</a>
+                </div>
+            </div>
+        </div>
     </body>
 </html>
