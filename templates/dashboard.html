@@ -1,112 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Game Dashboard</title>
-  <link rel="stylesheet" href="/static/css/dashboard.css" />
-</head>
-<body>
-
-  <header class="topbar">
-    <h1>Card Arena</h1>
-    <div class="user">
-      <span class="username">PlayerOne</span>
-      <img src="https://via.placeholder.com/36" alt="avatar" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SKITGUBBE — Dashboard</title>
+  <link rel="stylesheet" href="/static/css/dashboard.css"/>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+<style>
+</style>
+  <body>
+      <div class="header">
+          <div class="logo">♠ SKITGUBBE</div>
+          <button class="btn btn-red" id="logout-btn">LOGOUT</button>
+      </div>
+      <div class="center-wrap">
+    <div class="panel action-panel">
+      <div class="section-label">Host a Game</div>
+      <div class="pixel-divider"></div>
+      <div id="create-error" class="error-msg"></div>
+      <button class="btn btn-gold" id="create-btn" style="width:100%; text-align:center;">
+        ▶ CREATE ROOM
+      </button>
     </div>
-  </header>
-
-  <main class="dashboard" id="dashboard">
-    <!-- Find Match -->
-    <section class="card highlight">
-      <h2>Create a Match</h2>
-      <p>Jump into a ranked or casual game.</p>
-      <button id="primary" class="primary">Create a Match</button>
-    </section>
-    
-    <!-- Join Match -->
-    <section class="card">
-        <h2>Join a Match</h2>
-        <p>Enter a match ID to join an existing game.</p>
-        <button onclick="openJoinModal()">Join Match</button>
-    </section>
-
-    <!-- Profile -->
-    <section class="card">
-      <h2>Profile</h2>
-      <p>View and edit your player profile.</p>
-      <button>View Profile</button>
-    </section>
-
-    <!-- Stats -->
-    <section class="card">
-      <h2>Stats</h2>
-      <ul class="stats">
-        <li><span>Games Played</span><strong>124</strong></li>
-        <li><span>Wins</span><strong>78</strong></li>
-        <li><span>Win Rate</span><strong>63%</strong></li>
-        <li><span>Rank</span><strong>Gold II</strong></li>
-      </ul>
-    </section>
-  </main>
-
-  <!-- Join Match Modal -->
-<div id="joinModal" class="modal hidden">
-  <div class="modal-content">
-    <h3>Join Match</h3>
-    <p>Enter the match ID provided by the host.</p>
-
-    <input
-      type="text"
-      placeholder="Match ID"
-      id="room-id"
-    />
-
-    <div class="modal-actions">
-      <button onclick="closeJoinModal()">Cancel</button>
-      <button id="secondary" class="primary">Join</button>
+    <div class="panel action-panel">
+      <div class="section-label">Join a Game</div>
+      <div class="pixel-divider"></div>
+      <div class="join-row">
+        <input
+          id="room-id"
+          class="input-field"
+          type="text"
+          placeholder="ENTER ROOM ID..."
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button class="btn btn-green" id="join-btn">▶ JOIN</button>
+      </div>
+      <div id="join-error" class="error-msg"></div>
     </div>
   </div>
-</div>
-
+<script src="/static/js/common.js"></script>
 <script>
-</script>
-
-<script>
-    document.getElementById('primary').addEventListener('click', async (e) => {
-        e.preventDefault();
-
-        const res = await fetch('/api/rooms', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-        });
-
-        if (!res.ok) {
-            alert('Failed to create room');
-            return;
-        };
-
-        const data = await res.json(); // { id: "..." }
-        window.location = '/room/' + data.id;
+    document.getElementById('create-btn').addEventListener('click', async (e) => {
+        const btn = document.getElementById('create-btn');
+        const err = document.getElementById('create-error');
+        err.style.display = 'none';
+        btn.disabled = true;
+        btn.textContent = 'CREATING...';
+        try {
+            const room = await API.post('/api/rooms', {});
+            window.location.href = `/room/${room.id}`;
+        } catch (e) {
+            err.textContent = e.message || 'Failed to create room';
+            err.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = '▶ CREATE ROOM';
+        }
     });
-    function openJoinModal() {
-        document.getElementById("joinModal").classList.remove("hidden");
+
+    async function joinRoom() {
+        const input  = document.getElementById('room-id');
+        const btn    = document.getElementById('join-btn');
+        const err    = document.getElementById('join-error');
+        const roomId = input.value.trim();
+
+        if (!roomId) {
+            err.textContent = 'Enter a Room ID first';
+            err.style.display = 'block';
+            return;
+        }
+
+        err.style.display = 'none';
+        btn.disabled = true;
+        btn.textContent = '▶ JOINING...';
+
+        try {
+            await API.post(`/api/rooms/${roomId}/join`, {});
+            window.location.href = `/room/${roomId}`;
+        } catch (e) {
+            err.textContent = e.message || 'Room not found';
+            err.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = "JOIN"
+        }
     }
 
-    function closeJoinModal() {
-        document.getElementById("joinModal").classList.add("hidden");
-    }
-
-
-    document.getElementById('secondary').addEventListener('click', async (e) => {
-        e.preventDefault();
-
-        const roomIdInput = document.getElementById('room-id');
-        const roomId = roomIdInput.value.trim();
-
-        await fetch(`/api/rooms/${encodeURIComponent(roomId)}/join`, { method: 'POST' });
-
-        window.location = '/room/' + roomId;
+    document.getElementById('join-btn').addEventListener('click', joinRoom);
+    document.getElementById('room-id').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') joinRoom();
     });
 </script>
 </body>

@@ -1,0 +1,39 @@
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.landing-wrap {
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
+}
+
+.tagline {
+    font-family: 'Press Start 2P', monospace;
+    text-align: center;
+    font-size: 16px;
+    color: black;
+    line-height: 1.9;
+    margin-top: 4px;
+}
+.tagline em {
+    color: black;
+    font-style: normal;
+}
+
+.cta-buttons {
+    font-family: 'Press Start 2P', monospace;
+    display: flex;
+    flex-direction: row-reverse;
+    gap: 14px;
+    margin-top: 4px;
+}
+.cta-buttons .btn {
+    width: 100%;
+    text-align: center;
+    display: block;
+    text-decoration: none;
+}
