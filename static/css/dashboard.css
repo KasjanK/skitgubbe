@@ -57,12 +57,7 @@ body {
     display: flex;
     gap: 10px;
 }
-.join-row .input-field {
-    flex: 1;
-    font-size: 18px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-}
+
 .join-row .btn {
     flex-shrink: 0;
     white-space: nowrap;
