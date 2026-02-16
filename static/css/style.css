@@ -29,6 +29,20 @@ html, body {
   overflow-x: hidden;
 }
 
+.logo {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 18px;
+    text-shadow: 3px 3px 0 #000;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
 
 .game-title {
     font-family: 'Press Start 2P', monospace;

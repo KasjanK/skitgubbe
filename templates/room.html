@@ -1,38 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Game Room</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="/static/css/room.css" />
-</head>
-<body>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Game Room</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="/static/css/style.css" />
+        <style>
 
-<div class="room-container">
+body {
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
 
-  <header class="room-header">
-    <h1>Game Room</h1>
-    <span class="room-id">Room ID: <span id="room-id"></span></span>
-  </header>
+    .lobby-grid {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 24px;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    @media (max-width: 680px) { .lobby-grid { grid-template-columns: 1fr; } }
 
-  <section class="players">
-    <h2>Players</h2>
+    .action-btns { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+    .action-btns .btn { flex: 1; min-width: 120px; text-align: center; }
 
-    <ul id="player-list" class="player-list">
-    </ul>
-  </section>
+    .phase-banner {
+        font-family: 'Press Start 2P', monospace;
+        font-size: 10px;
+        text-align: center;
+        padding: 10px;
+        border: 3px solid #000;
+        margin-bottom: 20px;
+        letter-spacing: 2px;
+    }
+    .phase-banner.setup   { background: #1a3a5a; color: #7dd3f0; }
+    .phase-banner.waiting { background: #3a2a00; color: var(--gold); }
+    .phase-banner.playing { background: var(--green); color: var(--cream); }
 
-  <footer class="actions">
-    <button id="readyBtn" onclick="toggleReady()">Ready</button>
+    .copy-btn {
+        font-family: 'Press Start 2P', monospace;
+        font-size: 8px;
+        background: var(--green-dark);
+        border: 2px solid #3a6b4a;
+        color: #3a6b4a;
+        padding: 4px 8px;
+        cursor: pointer;
+        vertical-align: middle;
+        margin-left: 8px;
+    }
+    .copy-btn:hover { color: var(--gold); border-color: var(--gold); }
 
-    <button id="start-game" class="primary">Start Game</button>
-  </footer>
+    .start-hint {
+        font-size: 15px;
+        color: #3a6b4a;
+        text-align: center;
+        margin-top: 10px;
+        line-height: 1.7;
+    }
 
-</div>
+    .selected-count {
+        font-family: 'Press Start 2P', monospace;
+        font-size: 8px;
+        color: var(--gold);
+        margin-left: 12px;
+    }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <div class="logo">♠ SKITGUBBE</div>
+            <button class="btn btn-red" id="logout-btn">LOGOUT</button>
+        </div>
 
-<script>
+        <div class="lobby-grid">
+            <!-- LEFT: Players + actions -->
+            <div>
+                <div class="panel">
+                    <div class="section-label">Players</div>
+                    <ul id="player-list"></ul>
+                </div>
+            </div>
+            <!-- RIGHT: Info -->
+            <div class="panel">
+                <div class="section-label">Room Info</div>
+                <label>Status: Waiting for host...</label>
+                <label>Players 0 / 4</label>
+                <label>Ready   0 / 4</label>
+                <label>Room ID: <span id="room-id"></span></label>
+                <button class="btn btn-gold" id="copy-btn" title="Copy room link">COPY LINK</button>
+                <button class="btn btn-gold" id="start-game">START GAME</button>
+            </div>
+        </div>
+        <script>
     const roomId = "{{ .RoomID }}";
     const currentUserId = "{{ .UserID }}";
+
+    document.getElementById('room-id').innerHTML = roomId;
 
     async function refreshRoom() {
         const res = await fetch('/api/rooms/' + encodeURIComponent(roomId));
@@ -44,8 +109,9 @@
         const ul = document.getElementById('player-list');
         ul.innerHTML = '';
         room.players.forEach(p => {
-            const li = document.createElement('li');
+            const li = document.createElement('label');
             li.textContent = p.id; 
+            
             ul.appendChild(li);
         });
 
