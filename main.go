@@ -61,8 +61,13 @@ func main() {
 	//TODO:
 	// - end game properly, remove game after ending, redirect players after.
 	// - show statistics, everyones places.
-	// - change to advance turn after playing a 2
 	// - DESIGN THE SITE!!!!
+	// - add logout endpoint
+	// - add ready function
+	// - only one room can be created at the same time
+	// - leave button
+	// - only show start button for owner of room
+	// - add player info in room
 
 	//BUGS: 
 

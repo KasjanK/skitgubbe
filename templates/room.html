@@ -86,7 +86,7 @@ body {
             <div class="panel">
                 <div class="section-label">Room Info</div>
                 <label>Status: Waiting for host...</label>
-                <label>Players 0 / 4</label>
+                <label>Players: <span id="players-count"></span> / 4</label>
                 <label>Ready   0 / 4</label>
                 <label>Room ID: <span id="room-id"></span></label>
                 <button class="btn btn-gold" id="copy-btn" title="Copy room link">COPY LINK</button>
@@ -97,6 +97,12 @@ body {
     const roomId = "{{ .RoomID }}";
     const currentUserId = "{{ .UserID }}";
 
+    document.getElementById('copy-btn').addEventListener('click', () => {
+        navigator.clipboard.writeText(roomId).then(() => {
+            console.log('Room ID copied:', roomId);
+        });
+    });
+
     document.getElementById('room-id').innerHTML = roomId;
 
     async function refreshRoom() {
@@ -104,6 +110,8 @@ body {
         if (!res.ok) return;
 
         const room = await res.json();
+
+        const playersCount = document.getElementById('players-count').textContent = room.players.length;
 
         // render players
         const ul = document.getElementById('player-list');
