@@ -137,6 +137,7 @@ func VisibleStateFor(gs *GameState, viewer PlayerID) VisibleState {
 		You:           you,
 		Others:        others,
 		Pile:          gs.Pile,
+		DeckSize: 		   len(gs.Deck), 
 		CurrentPlayer: gs.CurrentPlayer,
 	}
 }

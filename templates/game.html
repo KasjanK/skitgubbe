@@ -1,507 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <title>Skitgubbe</title>
-        <link rel="stylesheet" href="/static/css/game.css" />
-    </head>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SKITGUBBE — Game</title>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+  <link rel="stylesheet" href="/static/css/game.css"/>
+<style>
+</style>
+</head>
     <body>
-        <p>Game ID: <span id="game-id"></p>
-        <p id="phase"></p>
-        <p>Current player: <span id="current-player"></p>
-
-        <h2>Your hand</h2>
-        <ul id="your-hand"></ul>
-
-        <h2>Your faceup</h2>
-        <ul id="your-faceup"></ul>
-
-        <h2>Your facedown</h2>
-        <div id="your-facedown"></div>
-
-        <button id="play-selected">Play selected</button>
-        <button id="pickup">Pickup Pile</button>
-        <button id="chance">Chance</button>
-        <button id="ready-setup">Ready</button>
-
-        <h2>Pile</h2>
-        <div id="pile"></div>
-
-        <h2>Other players</h2>
-        <div id="other-hands"></div>
-
-        <h2>Standings</h2>
-        <div id="standings"></div>
-
-        <script>
-            const gameId = window.location.pathname.split('/')[2]; // /game/{id}
-            document.getElementById('game-id').innerHTML = gameId
-
-            let selectedCards = [];
-            let selectedHandIdx = null;
-            let selectedFaceUpIdx = null;
-            let selectedFaceDownIdx = null;
-
-            async function refreshGame() {
-                const res = await fetch('/api/games/' + encodeURIComponent(gameId));
-                if (!res.ok) return;
-
-                const state = await res.json();
-
-                document.getElementById('phase').textContent = 
-                    state.finished ? 'Game over' :
-                    state.phase === 'setup' ? 'Phase: Setup' : 'Phase: Play';
-
-                const isYourTurn = state.current_player === state.you.id;
-                document.getElementById('current-player').textContent =
-                    state.finished 
-                        ? 'Game finished'
-                        : isYourTurn 
-                        ? 'Your turn' 
-                        : `Waiting for ${state.current_player}`;
-
-                renderPile(state);
-
-                if (state.phase === 'setup') {
-                    renderSetup(state);
-                } else {
-                    renderPlay(state, isYourTurn);
-                }
-
-                renderOthers(state);
-                renderWinners(state);
-            }
-
-            function renderPile(state) {
-                const pileEl = document.getElementById('pile');
-                pileEl.innerHTML = '';
-
-                const cards = state.pile || []; // fallback to empty array
-                cards.forEach((card, i) => {
-                    const el = document.createElement('div');
-                    el.classList.add('card');
-                    el.textContent = `${card.rank} ${card.suit}`;
-                    el.style.position = 'absolute';
-                    el.style.top = `${i * 2}px`;
-                    el.style.left = `${i * 2}px`;
-                    pileEl.appendChild(el);
-                });
-            }
-
-            function renderOthers(state) {
-                const othersDiv = document.getElementById('other-hands');
-                othersDiv.innerHTML = '';
-
-                state.others.forEach(p => {
-                    const container = document.createElement('div');
-                    container.className = 'other-player';
-
-                    const label = document.createElement('div');
-                    label.textContent = `Player ${p.id}`;
-                    container.appendChild(label);
-
-                    const handInfo = document.createElement('div');
-                    for (let i = 0; i < p.hand_size; i++) {
-                        const cardBack = document.createElement('div');
-                        cardBack.className = 'card card-back';
-                        handInfo.appendChild = cardBack;
-                    }
-                    container.appendChild(handInfo);
-
-                    const tableFaceUp = document.createElement('ul');
-                    (p.others_faceup_table_cards || []).forEach(card => {
-                        const li = document.createElement('li');
-                        li.className = 'card';
-                        li.textContent = `${card.rank} ${card.suit}`;
-                        tableFaceUp.appendChild(li);
-                    });
-                    container.appendChild(tableFaceUp);
-
-                    const tableFaceDown = document.createElement('div');
-                    for (let i = 0; i < p.facedown_table_cards_size; i++) {
-                        const cardBack = document.createElement('div');
-                        cardBack.className = 'card card-back';
-                        tableFaceDown.appendChild(cardBack);
-                    }
-                    container.appendChild(tableFaceDown);
-
-                    othersDiv.appendChild(container);
-                });
-            }
-
-            function renderSetup(state) {
-                console.log('renderSetup called, hand size:', state.you.hand.length);
-                const handUl = document.getElementById('your-hand');
-                handUl.innerHTML = '';
-
-                state.you.hand.forEach((card, idx) => {
-                    const li = document.createElement('li');
-                    li.classList.add('card');
-                    li.textContent = `${card.rank} ${card.suit}`;
-
-                    if (idx === selectedHandIdx) {
-                        li.classList.add('selected');
-                    }
-
-                    li.addEventListener('click', () => {
-                        if (idx === selectedHandIdx) {
-                            selectedHandIdx = null;
-                        } else {
-                            selectedHandIdx = idx;
-                        }
-
-                        document.querySelectorAll('#your-hand .card').forEach((el, i) => el.classList.toggle('selected', i === selectedHandIdx));
-                    });
-                    handUl.appendChild(li);
-                });
-
-                const faceupUl = document.getElementById('your-faceup');
-                faceupUl.innerHTML = '';
-
-                (state.you.faceup_table_cards || []).forEach((card, idx) => {
-                    const li = document.createElement('li');
-                    li.classList.add('card');
-                    li.textContent = `${card.rank} ${card.suit}`;
-
-                    li.addEventListener('click', () => {
-                        console.log('faceup slot clicked', idx, 'selectedHandIdx=', selectedHandIdx);
-                        if (selectedHandIdx == null) return;
-                        swapFaceUp(selectedHandIdx, idx);
-                    });
-                    faceupUl.appendChild(li);
-                });
-
-                const facedownDiv = document.getElementById('your-facedown');
-                facedownDiv.innerHTML = '';
-                for (let i = 0; i < state.you.facedown_table_cards.length; i++) {
-                    const cardBack = document.createElement('div');
-                    cardBack.className = 'card card-back';
-                    facedownDiv.appendChild(cardBack);
-                }
-
-                document.getElementById('play-selected').disabled = true;
-                document.getElementById('pickup').disabled = true;
-                document.getElementById('chance').disabled = true;
-
-                const readyBtn = document.getElementById('ready-setup');
-                readyBtn.disabled = state.you.ready;
-                readyBtn.onclick = readySetup;
-            }
-
-            async function swapFaceUp(handIndex, slotIndex) {
-                const res = await fetch(`/api/games/${encodeURIComponent(gameId)}/move`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        type: 'swap_face_up',
-                        index: handIndex,
-                        indices: [slotIndex],
-                    }),
-                });
-
-                if (!res.ok) return;
-
-                selectedHandIdx = null;
-                await refreshGame();
-            }
-
-            async function readySetup() {
-                const res = await fetch(`/api/games/${encodeURIComponent(gameId)}/move`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        type: 'ready_setup',
-                    }),
-                });
-
-                if (!res.ok) return;
-                await refreshGame();
-            }
-
-            function renderPlay(state, isYourTurn) {
-                const handUl = document.getElementById('your-hand');
-                handUl.innerHTML = '';
-
-                state.you.hand.forEach((card, idx) => {
-                    const li = document.createElement('li');
-                    li.classList.add('card');
-                    li.textContent = `${card.rank} ${card.suit}`;
-
-                    const key = `hand-${idx}-${card.rank}-${card.suit}`;
-                    li.dataset.key = key;
-                    li.dataset.index = idx;
-
-                    if (selectedCards.some(c => c.key === key)) {
-                        li.classList.add('selected');
-                    }
-
-                    if (isYourTurn) {
-                        li.addEventListener('click', () => {
-                            toggleCardSelection(li, card, idx, key);
-                        });
-                    } else {
-                        li.classList.add('disabled');
-                    }
-
-                    handUl.appendChild(li);
-                });
-
-                const faceupUl = document.getElementById('your-faceup');
-                faceupUl.innerHTML = '';
-                (state.you.faceup_table_cards || []).forEach((card, idx) => {
-                    const li = document.createElement('li');
-                    li.classList.add('card');
-                    li.textContent = `${card.rank} ${card.suit}`;
-
-                    const key = `faceup-${idx}-${card.rank}-${card.suit}`;
-                    li.dataset.key = key;
-                    li.dataset.index = idx;
-
-                    if (selectedCards.some(c => c.key === key)) {
-                        li.classList.add('selected');
-                    }
-
-                    if (isYourTurn) {
-                        li.addEventListener('click', () => {
-                            toggleCardSelection(li, card, idx, key);
-                        });
-                    } else {
-                        li.classList.add('disabled');
-                    }
-
-                    faceupUl.appendChild(li);
-                });
-
-                const facedownDiv = document.getElementById('your-facedown');
-                facedownDiv.innerHTML = '';
-                state.you.facedown_table_cards.forEach((_, idx) => {
-                    const cardBack = document.createElement('div');
-                    cardBack.className = 'card card-back';
-
-                    const key = `facedown-${idx}`;
-                    cardBack.dataset.key = key;
-                    cardBack.dataset.index = idx;
-
-                    if (selectedCards.some(c => c.key === key)) {
-                        cardBack.classList.add('selected');
-                    }
-
-                    if (isYourTurn) {
-                        cardBack.addEventListener('click', () => {
-                            toggleCardSelection(cardBack, { rank: null, suit: null, }, idx, key);
-                        });
-                    } else {
-                        cardBack.classList.add('disabled');
-                    }
-                    facedownDiv.appendChild(cardBack);
-                });
-
-                document.getElementById('play-selected').disabled = !isYourTurn;
-                document.getElementById('pickup').disabled = !isYourTurn;
-                document.getElementById('chance').disabled = !isYourTurn;
-
-                const readyBtn = document.getElementById('ready-setup');
-                if (readyBtn) {
-                    readyBtn.disabled = true;
-                    readyBtn.onclick = null;
-                }
-
-                wirePlayButtons();
-            }
-
-            function renderHand(hand) {
-                const ul = document.getElementById('your-hand');
-                ul.innerHTML = '';
-
-                hand.forEach((card, idx) => {
-                    const li = document.createElement('li');
-                    li.classList.add('card');
-                    li.textContent = `${card.rank} ${card.suit}`;
-
-                    const key = `${card.rank}-${card.suit}-${idx}`;
-                    li.dataset.key = key;
-                    li.dataset.index = idx;
-
-                    if (selectedCards.some(c => c.key === key)) {
-                        li.classList.add('selected');
-                    }
-
-                    li.addEventListener('click', () => {
-                        toggleCardSelection(li, card, idx);
-                    });
-
-                    ul.appendChild(li);
-                });
-            }
-
-            async function playCard(card) {
-                const res = await fetch(`/api/games/${encodeURIComponent(gameId)}/move`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        type: 'play_card',
-                        card: { rank: card.rank, suit: card.suit },
-                    }),
-                });
-
-                if (!res.ok) return;
-                await refreshGame();
-            }
-            
-            async function pickupPile() {
-                const res = await fetch(`/api/games/${encodeURIComponent(gameId)}/move`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        type: 'pickup',
-                    }),
-                });
-
-                if (!res.ok) return;
-                await refreshGame();
-            }
-
-            async function chanceCard() {
-                const res = await fetch(`/api/games/${encodeURIComponent(gameId)}/move`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        type: 'chance',
-                    }),
-                });
-
-                if (!res.ok) return;
-                await refreshGame();
-            }
-
-            async function playFaceDown(index) {
-                await refreshGame();
-            }
-
-            async function playFaceUp(index) {
-                await refreshGame();
-            }
-
-            function toggleCardSelection(li, card, idx, key) {
-                const existing = selectedCards.findIndex(c => c.key === key);
-
-                if (existing >= 0) {
-                    selectedCards.splice(existing, 1);
-                    li.classList.remove('selected');
-                } else {
-                    selectedCards.push({ key, card, index: idx });
-                    li.classList.add('selected');
-                }
-            }
-
-            function wirePlayButtons() {
-                const playBtn = document.getElementById('play-selected');
-                const pickupBtn = document.getElementById('pickup');
-                const chanceBtn = document.getElementById('chance');
-
-                if (playBtn && !playBtn._wired) {
-                    playBtn._wired = true;
-                    playBtn.addEventListener('click', playSelected);
-                }
-                if (pickupBtn && !pickupBtn._wired) {
-                    pickupBtn._wired = true;
-                    pickupBtn.addEventListener('click', pickupPile);
-                }
-                if (chanceBtn && !chanceBtn._wired) {
-                    chanceBtn._wired = true;
-                    chanceBtn.addEventListener('click', chanceCard);
-                }
-            }
-
-            document.getElementById('play-selected').addEventListener('click', playSelected);
-
-            async function playSelected() {
-                if (selectedCards.length === 0) return;
-
-                const hand = selectedCards.filter(c => c.key.startsWith('hand-'));
-                const faceup = selectedCards.filter(c => c.key.startsWith('faceup-'));
-                const facedown = selectedCards.filter(c => c.key.startsWith('facedown-'));
-
-                const zonesSelected = [hand.length > 0, faceup.length > 0, facedown.length > 0].filter(Boolean).length;
-                if (zonesSelected !== 1) {
-                    return;
-                }
-
-                if (hand.length > 0) {
-                    const indices = selectedCards.map(c => c.index);
-
-                    const res = await fetch(`/api/games/${encodeURIComponent(gameId)}/move`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({
-                            type: 'play_many',
-                            indices,
-                        }),
-                    });
-
-                    if (!res.ok) {
-                        const data = await res.json().catch(() => ({}));
-                        alert(data.error || 'Move failed');
-                        return;
-                    }
-                } else if (faceup.length > 0) {
-                    const idx = faceup[0].index;
-                    const res = await fetch(`/api/games/${encodeURIComponent(gameId)}/move`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({
-                            type: 'play_face_up',
-                            index: idx,
-                        }),
-                    });
-
-                    if (!res.ok) return;
-                } else if (facedown.length > 0) {
-                    const idx = facedown[0].index;
-                    const res = await fetch(`/api/games/${encodeURIComponent(gameId)}/move`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({
-                            type: 'play_face_down',
-                            index: idx,
-                        }),
-                    });
-
-                    if (!res.ok) return;
-                }
-
-                selectedCards = [];
-                await refreshGame();
-
-            }
-            function renderWinners(state) {
-                const standingsEl = document.getElementById('standings');
-                standingsEl.innerHTML = '';
-
-                if (!state.winners || state.winners.length === 0) {
-                    const msg = document.createElement('div');
-                    msg.textContent = 'No winners yet';
-                    standingsEl.appendChild(msg);
-                    return;
-                }
-
-                state.winners.forEach((playerId, index) => {
-                    const div = document.createElement('div');
-                    const place = index + 1;
-                    let placeText = place + 'th';
-                    if (place === 1) placeText = '1st';
-                    else if (place === 2) placeText = '2nd';
-                    else if (place === 3) placeText = '3rd';
-
-                    div.textContent = `${placeText}: ${playerId}`;
-                    if (playerId === state.you.id) {
-                        div.textContent += ' (you)';
-                    }
-                    standingsEl.appendChild(div);
-                });
-            }
-
-            refreshGame();
-            setInterval(refreshGame, 1000);
-        </script>
+        <div class="game-container">
+            <!-- GAME TABLE -->
+            <div class="game-table">
+                <!-- Opponents positioned around table -->
+                <div id="other-hands"></div>
+
+                <!-- Center: deck + pile -->
+                <div class="center-area">
+                    <div>
+                        <div id="deck-area"></div>
+                    </div>
+                    <div>
+                        <div id="pile"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="your-area">
+                <div class="your-name">
+                    <span class="you-label">YOU</span>
+                    <span id="your-name-label">—</span>
+                </div>
+                <div class="your-cards-row">
+                    <!-- Hand -->
+                    <div class="card-zone" style="flex:1;">
+                        <div class="zone-label">HAND</div>
+                        <div id="your-hand"></div>
+                    </div>
+
+                    <div class="card-divider"></div>
+
+                    <!-- Face-up table -->
+                    <div class="card-zone">
+                        <div class="zone-label">FACE UP</div>
+                        <div class="zone-cards" id="your-faceup"></div>
+                    </div>
+
+                    <div class="card-divider"></div>
+
+                    <!-- Face-down table -->
+                    <div class="card-zone">
+                        <div class="zone-label">FACE DOWN</div>
+                        <div class="zone-cards" id="your-facedown"></div>
+                    </div>
+                </div>
+
+                <!-- ACTION BUTTONS -->
+                <div id="action-buttons"></div>
+            </div>
+        </div>
+
+        <div id="winner-overlay">
+            <div class="winner-panel panel">
+                <div id="winner-title">🏆 GAME OVER</div>
+                <div class="pixel-divider"></div>
+                <div id="winner-list"></div>
+                <div class="winner-actions">
+                    <a href="/dashboard" class="btn btn-gold">▶ NEW GAME</a>
+                </div>
+            </div>
+        </div>
+         <script src="/static/js/common.js"></script>
+         <script src="/static/js/game.js"></script>
     </body>
+</html>

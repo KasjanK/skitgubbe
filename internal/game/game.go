@@ -106,6 +106,7 @@ type VisibleState struct {
 	You 		 PlayerState     `json:"you"`
 	Others       []VisiblePlayer `json:"others"`
 	Pile 		 []Card			 `json:"pile"`
+	DeckSize 	 int 		     `json:"deck_size"`
 	CurrentPlayer PlayerID		 `json:"current_player"`
 }
 

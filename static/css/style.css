@@ -195,3 +195,95 @@ label {
     text-align: center;
     line-height: 1.8;
 }
+
+/* ─── CARD ─── */
+.card {
+  width: var(--card-width);
+  height: var(--card-height);
+  background: var(--cream);
+  border: 3px solid #000;
+  border-radius: 4px;
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  user-select: none;
+  transition: transform 0.15s, box-shadow 0.15s;
+  flex-shrink: 0;
+  image-rendering: pixelated;
+  box-shadow: 3px 3px 0 #000;
+}
+
+.card:hover:not(.card-facedown):not(.card-disabled) {
+  transform: translateY(-14px) rotate(-2deg);
+  box-shadow: 5px 8px 0 #000;
+  z-index: 10;
+}
+
+.card.selected {
+  transform: translateY(-20px);
+  box-shadow: 0 0 0 3px var(--gold), 5px 8px 0 #000;
+  z-index: 10;
+}
+
+.card-rank {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: bold;
+  position: absolute;
+  top: 5px;
+  left: 6px;
+}
+
+.card-suit-center {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.card-rank-bottom {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  position: absolute;
+  bottom: 5px;
+  right: 6px;
+  transform: rotate(180deg);
+}
+
+.card.hearts .card-rank,
+.card.hearts .card-rank-bottom,
+.card.hearts .card-suit-center,
+.card.diamonds .card-rank,
+.card.diamonds .card-rank-bottom,
+.card.diamonds .card-suit-center {
+  color: var(--red);
+}
+
+.card.spades .card-rank,
+.card.spades .card-rank-bottom,
+.card.spades .card-suit-center,
+.card.clubs .card-rank,
+.card.clubs .card-rank-bottom,
+.card.clubs .card-suit-center {
+  color: #1a1a2e;
+}
+
+.card-back {
+  background: var(--brown);
+  cursor: default;
+}
+.card-back::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 2px solid rgba(255,255,255,0.15);
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255,255,255,0.04) 0px,
+    rgba(255,255,255,0.04) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+}
