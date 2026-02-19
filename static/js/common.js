@@ -69,6 +69,7 @@ function buildCardEl(card, opts = {}) {
   el.className = `card ${suitCls}`;
 
   if (opts.facedown) {
+      el.dataset.key = `facedown-${Math.random()}`;
     el.classList.add('card-facedown');
   } else {
     const rank = cardRankLabel(card.rank);
@@ -78,6 +79,7 @@ function buildCardEl(card, opts = {}) {
       <span class="card-suit-center">${sym}</span>
       <span class="card-rank-bottom">${rank}</span>
     `;
+      el.dataset.key = `${card.rank}-${card.suit}`;
   }
 
   if (opts.selected)  el.classList.add('selected');
