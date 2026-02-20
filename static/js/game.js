@@ -392,7 +392,7 @@ function renderYourHand(you, isMyTurn, phase) {
     }
 
   if (!you.hand.length) {
-    el.innerHTML = `<span class="no-cards">Hand empty</span>`;
+    container.innerHTML = `<span class="no-cards">Hand empty</span>`;
     return;
   }
 
@@ -449,32 +449,21 @@ function renderYourTable(you, isMyTurn, phase) {
         if (!newFUKeys.has(key)) el.remove();
     });
 
-    const existingFD = new Map();
-    qsa('.card', fdContainer).forEach(el => existingFD.set(el.dataset.key, el));
-    const newFDKeys = new Set();
+    fdContainer.innerHTML = '';
 
     const fdCount = (you.facedown_table_cards ?? []).length;
     for (let i = 0; i < fdCount; i++) {
         const key = `facedown-${i}`;
         const isSelected = selectedCards.some(sc => sc.key === key);
-        newFDKeys.add(key);
-        let el = existingFD.get(key);
-        if (el) {
-            el.classList.toggle('selected', isSelected);
-            el.dataset.index = i;
-        } else {
-            el = buildCardEl({ rank: 0, suit: 0 }, {
-                facedown: true,
-                selected: isSelected,
-                onClick: (c, cardEl) => toggleCardSelection(cardEl, { rank: null, suit: null }, i, key),
-            });
-            el.dataset.key = key;
-            fdContainer.appendChild(el);
-        }
+        const el = buildCardEl({ rank: 0, suit: 0 }, {
+            facedown: true,
+            selected: isSelected,
+            onClick: (c, cardEl) => toggleCardSelection(cardEl, { rank: null, suit: null }, i, key),
+        });
+        el.dataset.key = key;
+        el.dataset.index = i;
+        fdContainer.appendChild(el);
     }
-    existingFD.forEach((el, key) => {
-        if (!newFDKeys.has(key)) el.remove();
-    });
 }
 
 function toggleCardSelection(li, card, idx, key) {
