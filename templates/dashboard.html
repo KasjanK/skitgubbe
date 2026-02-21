@@ -89,6 +89,15 @@
     document.getElementById('room-id').addEventListener('keydown', (e) => {
         if (e.key === 'Enter') joinRoom();
     });
+
+    document.getElementById('logout-btn').addEventListener('click', async (e) => {
+        try {
+            await API.post('/api/logout', {});
+            window.location.href = '/login';
+        } catch (e) {
+            console.log("Could not sign out")
+        }
+    });
 </script>
 </body>
 </html>

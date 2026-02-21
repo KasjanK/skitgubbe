@@ -48,6 +48,7 @@ func (cfg apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 		Value:  sessionID.String(),
 		Path:   "/",
 		HttpOnly: true,
+		MaxAge: 86400 * 7,
 	})
 
 	respondWithJSON(w, http.StatusOK, response{
@@ -80,6 +81,10 @@ func (cfg *apiConfig) currentUser(r *http.Request) (*database.User, error) {
 }
 
 func (cfg *apiConfig) handlerLoginPage(w http.ResponseWriter, r *http.Request) {
+	if user, err := cfg.currentUser(r); err == nil && user != nil {
+		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+		return
+	}
 	if err := cfg.templates.ExecuteTemplate(w, "login.html", nil); err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Could not execute login template", err)
 		return

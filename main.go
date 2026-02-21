@@ -61,19 +61,18 @@ func main() {
 	//TODO:
 	// - end game properly, remove game after ending, redirect players after.
 	// - show statistics, everyones places.
-	// - add logout endpoint
 	// - add ready function
 	// - only one room can be created at the same time
 	// - leave button
 	// - only show start button for owner of room
 	// - add player info in room
-	// - fix stuttering animations
-	// - optimize the js
+	// - player with lowest card starts
 
 	//BUGS: 
 
 	mux.HandleFunc("POST /api/login", cfg.handlerLogin)
 	mux.HandleFunc("POST /api/signup", cfg.handlerSignup)
+	mux.HandleFunc("POST /api/logout", cfg.handlerLogout)
 
 	mux.HandleFunc("POST /api/rooms", cfg.handlerCreateRoom)
 	mux.HandleFunc("POST /api/rooms/", cfg.handlerRoomsPost)
