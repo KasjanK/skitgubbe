@@ -216,7 +216,7 @@ label {
   box-shadow: 3px 3px 0 #000;
 }
 
-.card:hover:not(.card-facedown):not(.card-disabled) {
+.card:hover {
   transform: translateY(-14px) rotate(-2deg);
   box-shadow: 5px 8px 0 #000;
   z-index: 10;

@@ -1,10 +1,9 @@
-/* game.js — Skitgubbe game logic */
 
     const gameId = gameIdFromPath();
-let state = null;        // VisibleState
+let state = null;        
 let prevState = null;
-let selectedCards = [];  // indices into you.hand (or faceup/facedown depending on phase)
-let selectedHandIdx = null;  // For setup phase
+let selectedCards = []; 
+let selectedHandIdx = null;
 let isAnimating = false;
 
 const UI = {
@@ -20,14 +19,12 @@ async function makeMove(move) {
         const needsAnim = ['play_card', 'play_many', 'play_face_up', 'play_face_down'].includes(move.type);
 
         await API.post(`/api/games/${gameId}/move`, move);
-        // Don't clear selectedCards here - wait for new state
 
         if (needsAnim) {
             await animateCardsToPile(move);
         }
         selectedCards = [];
         await fetchState();
-        // Clear after state updates
     } catch (e) {
         console.error('Move failed:', e);
     }
@@ -58,7 +55,6 @@ async function animateCardsToPile(move) {
     }  
     if (cardsToAnimate.length === 0) return;
 
-    // Animate each card
     const animations = cardsToAnimate.map(cardEl => {
         const cardRect = cardEl.getBoundingClientRect();
         const flyX = pileRect.left - cardRect.left + (pileRect.width - cardRect.width) / 2;
@@ -113,21 +109,16 @@ function renderSetup() {
 
     console.log('renderSetup called, hand size:', you.hand.length);
 
-    // Hide action buttons during setup
     UI.actions.innerHTML = '';
 
-    // Render deck and pile (usually empty during setup)
     renderDeck();
     renderPile();
 
-    // Render opponents (they're also setting up)
     renderOthers();
 
-    // Render your cards with swap functionality
     renderYourHandSetup(you);
     renderYourTableSetup(you);
 
-    // Show ready button
     const actionsEl = UI.actions;
     if (!you.ready) {
         const readyBtn = document.createElement('button');
@@ -162,7 +153,7 @@ function renderYourHandSetup(you) {
         const el2 = buildCardEl(card, {
             selected: isSelected,
             disabled: you.ready,
-            onClick: you.ready ? null : () => selectHandCardSetup(idx),
+            onClick: you.ready ? null : (c, cardEl) => selectHandCardSetup(idx),
         });
         el.appendChild(el2);
     });
@@ -175,7 +166,6 @@ function selectHandCardSetup(idx) {
         selectedHandIdx = idx;
     }
     renderYourHandSetup(state.you);
-    console.log('Hand card selected:', idx, 'selectedHandIdx=', selectedHandIdx);
 }
 
 function renderYourTableSetup(you) {
@@ -184,7 +174,6 @@ function renderYourTableSetup(you) {
     fuEl.innerHTML = '';
     fdEl.innerHTML = '';
 
-    // Face-up slots (clickable to swap with selected hand card)
     (you.faceup_table_cards ?? []).forEach((card, idx) => {
         const el = buildCardEl(card, {
             disabled: you.ready,
@@ -193,17 +182,6 @@ function renderYourTableSetup(you) {
         fuEl.appendChild(el);
     });
 
-    // Add empty slots if less than 3
-    for (let i = (you.faceup_table_cards ?? []).length; i < 3; i++) {
-        const slot = document.createElement('div');
-        slot.className = 'card';
-        slot.style.cssText = 'background:transparent; border-style:dashed; border-color:#3a6b4a; cursor:pointer;';
-        slot.innerHTML = `<span style="color:#3a6b4a; font-size:11px; font-family:'Press Start 2P',monospace;">+</span>`;
-        if (!you.ready) slot.addEventListener('click', () => swapFaceUp(i));
-        fuEl.appendChild(slot);
-    }
-
-    // Face-down (non-interactive during setup)
     const fdCount = (you.facedown_table_cards ?? []).length;
     for (let i = 0; i < fdCount; i++) {
         fdEl.appendChild(buildCardEl({ rank: 0, suit: 0 }, { facedown: true, disabled: true }));
@@ -236,16 +214,12 @@ async function readySetup() {
     }
 }
 
-// ─── Play Phase ────────────────────────────────────────────────────────────
-
 function renderPlay() {
     renderPile();
     renderDeck();
     renderOthers();
     renderYourArea();
 }
-
-// ─── Pile ──────────────────────────────────────────────────────────────────
 
 function renderPile() {
     const el = UI.pile;
@@ -259,7 +233,6 @@ function renderPile() {
         return;
     }
 
-    // Show up to 5 fanned cards, top card fully visible
     const show = pile.slice(Math.max(0, count - 5));
     show.forEach((card, i) => {
         const isTop = i === show.length - 1;
@@ -271,13 +244,12 @@ function renderPile() {
         el.appendChild(el2);
     });
 
-    // Pile count badge
     const badge = document.createElement('div');
     badge.className = 'pile-count';
     badge.textContent = count;
     el.appendChild(badge);
 }
-// ─── Deck ──────────────────────────────────────────────────────────────────
+
 function renderDeck() {
     const el = UI.deck;
     el.innerHTML = '';
@@ -301,8 +273,6 @@ function renderDeck() {
     badge.textContent = deckSize;
     el.appendChild(badge);
 }
-
-// ─── Opponents ─────────────────────────────────────────────────────────────
 
 function renderOthers() {
     const container = UI.others;
@@ -366,8 +336,6 @@ function renderOthers() {
     });
 }
 
-// ─── Your area ─────────────────────────────────────────────────────────────
-
 function renderYourArea() {
     const you = state.you;
     if (!you) return;
@@ -397,6 +365,7 @@ function renderYourHand(you, isMyTurn, phase) {
     }
 
     const newHandKeys = new Set();
+    const cardElements = [];
 
     you.hand.forEach((card, idx) => {
         const key = `hand-${idx}-${card.rank}-${card.suit}`;
@@ -413,11 +382,15 @@ function renderYourHand(you, isMyTurn, phase) {
             });
             el.dataset.key = key;
             container.appendChild(el);
+            cardElements.push(el);
         }
     });
     existing.forEach((el, key) => {
         if (!newHandKeys.has(key)) el.remove();
     });
+    container.setAttribute('data-card-count', you.hand.length);
+    container.style.setProperty('--hand-size', you.hand.length);
+
 }
 
 function renderYourTable(you, isMyTurn, phase) {
@@ -475,7 +448,6 @@ function toggleCardSelection(li, card, idx, key) {
         selectedCards.push({ key, card, index: idx });
         li.classList.add('selected');
     }
-
     renderActionButtons(state.you, state.current_player === state.you.id, state.phase);
 }
 
@@ -485,7 +457,6 @@ function renderActionButtons(you, isMyTurn, phase) {
 
     if (state.finished || phase !== 'play') return;
 
-    // Check what types of cards are selected
     const handSelected = selectedCards.filter(sc => sc.key.startsWith('hand-'));
     const faceupSelected = selectedCards.filter(sc => sc.key.startsWith('faceup-'));
     const facedownSelected = selectedCards.filter(sc => sc.key.startsWith('facedown-'));
@@ -499,7 +470,6 @@ function renderActionButtons(you, isMyTurn, phase) {
         zonesSelected
     });
 
-    // Play selected cards button - always show if cards are selected
     if (selectedCards.length > 0 && zonesSelected === 1) {
         if (handSelected.length > 0) {
             const sorted = handSelected.map(sc => sc.index).sort((a, b) => a - b);
@@ -512,7 +482,6 @@ function renderActionButtons(you, isMyTurn, phase) {
                 btn.onclick = () => makeMove({ type: 'play_card', card, index: sorted[0] });
                 container.appendChild(btn);
             } else {
-                // Check all same rank for play_many
                 const ranks = handSelected.map(sc => sc.card.rank);
                 const allSame = ranks.every(r => r === ranks[0]);
                 if (allSame) {
@@ -541,7 +510,6 @@ function renderActionButtons(you, isMyTurn, phase) {
         }
     }
 
-    // Chance button - always available
     const deckSize = state.deck_size ?? 0;
     const pileSize = state.pile?.length ?? 0;
     const canChance = deckSize > 0 && pileSize > 0;
@@ -556,7 +524,6 @@ function renderActionButtons(you, isMyTurn, phase) {
     chanceBtn.onclick = () => makeMove({ type: 'chance' });
     container.appendChild(chanceBtn);
 
-    // Pickup button - always available
     const pileEmpty = !state.pile?.length;
     const pickupBtn = document.createElement('button');
     pickupBtn.className = `btn ${pileEmpty ? 'btn-gray' : 'btn-red'}`;
@@ -566,7 +533,6 @@ function renderActionButtons(you, isMyTurn, phase) {
     pickupBtn.onclick = () => makeMove({ type: 'pickup' });
     container.appendChild(pickupBtn);
 
-    // Deselect - show if cards are selected
     if (selectedCards.length > 0) {
         const clearBtn = document.createElement('button');
         clearBtn.className = 'btn btn-green';
@@ -583,7 +549,6 @@ function renderActionButtons(you, isMyTurn, phase) {
         container.appendChild(clearBtn);
     }
 }
-// ─── Winner overlay ────────────────────────────────────────────────────────
 
 function renderWinners() {
     if (!state.finished) return;
@@ -599,8 +564,7 @@ function renderWinners() {
     const isWinner = winners[0];
     const isLoser = loser === you;
 
-    qs('#winner-title').textContent = isWinner ? 'YOU WIN!' : isLoser ? 'Loser LOL' : 'GAME OVER';
-    qs('#winner-title').style.color = isWinner ? 'var(--gold)' : isLoser ? 'var(--red-bright)' : 'var(--cream)';
+    qs('#winner-title').textContent = "GG!" 
 
     const list = qs('#winner-list');
     list.innerHTML = '';
@@ -629,8 +593,6 @@ function renderWinners() {
         list.appendChild(d);
     }
 }
-
-// ─── Boot ──────────────────────────────────────────────────────────────────
 
 fetchState();
 const poller = new Poller(fetchState, 1000);

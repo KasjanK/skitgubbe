@@ -106,7 +106,6 @@
     gap: 6px;
 }
 
-
 #action-buttons {
     display: flex;
     gap: 10px;
@@ -114,6 +113,50 @@
     flex-wrap: wrap;
     align-items: center;
 }
+
+#your-hand {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow: visible;
+  max-width: calc(100vw - 400px);
+  align-items: flex-end;
+  justify-content: center;
+  position: relative;
+}
+
+/* Dynamic card overlap based on hand size */
+#your-hand .card {
+  flex-shrink: 0;
+  margin-right: 0;
+  transition: transform 0.2s ease, z-index 0s;
+}
+
+/* When hand has many cards, overlap them */
+#your-hand[data-card-count="8"] .card { margin-right: -30px; }
+#your-hand[data-card-count="9"] .card { margin-right: -35px; }
+#your-hand[data-card-count="10"] .card,
+#your-hand[data-card-count="11"] .card,
+#your-hand[data-card-count="12"] .card { margin-right: -40px; }
+#your-hand[data-card-count="13"] .card,
+#your-hand[data-card-count="14"] .card,
+#your-hand[data-card-count="15"] .card { margin-right: -45px; }
+
+/* More than 15 cards: even more overlap */
+#your-hand .card:not(:last-child) {
+  margin-right: calc(6px - clamp(0px, (var(--hand-size, 7) - 7) * 6px, 50px));
+}
+
+/* Hover effect: lift card and bring to front */
+#your-hand .card:hover {
+  z-index: 100 !important;
+  transform: translateY(-20px) !important;
+}
+
+/* Selected cards stay elevated */
+#your-hand .card.selected {
+  z-index: 50;
+}
+
 #action-buttons .btn { font-size: 8px; padding: 10px 16px; }
 #action-buttons .status-bar {
     font-size: 8px;
@@ -343,6 +386,7 @@
   to   { opacity: 1; }
 }
 
+.deal-anim { animation: dealCard 0.4s cubic-bezier(0.2, 0.8, 0.4, 1) forwards; }
 .flip-anim { animation: cardFlip 0.3s ease-in-out; }
 .shake-anim { animation: pileShake 0.3s ease-in-out; }
 .float-anim { animation: pixelFloat 2.5s ease-in-out infinite; }
