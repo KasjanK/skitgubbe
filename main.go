@@ -67,7 +67,6 @@ func main() {
 	// - only show start button for owner of room
 	// - add player info in room
 	// - player with lowest card starts
-	// - LAST STYLING: HAND
 
 	//BUGS: 
 
