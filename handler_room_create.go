@@ -14,6 +14,17 @@ func (cfg *apiConfig) handlerCreateRoom(w http.ResponseWriter, r *http.Request) 
 		respondWithError(w, http.StatusUnauthorized, "unauthorized", err)
 		return
 	}
+
+	if len(cfg.rooms) > 0 {
+		for _, rm := range cfg.rooms {
+			for _, player := range rm.Players {
+				if player.ID == game.PlayerID(user.ID) {
+					respondWithError(w, http.StatusConflict, "You are already in a room!", nil)
+					return
+				}
+			}
+		}
+	}
 	
 	room := game.NewRoom(game.PlayerID(user.ID))
 

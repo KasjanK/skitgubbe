@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -40,6 +41,15 @@ func (cfg *apiConfig) handleJoinRoomAction(w http.ResponseWriter, r *http.Reques
 		respondWithError(w, http.StatusNotFound, "room not found", nil)
 		return
 	}
+
+	for _, rm := range cfg.rooms {
+		for _, player := range rm.Players {
+			if player.ID == game.PlayerID(user.ID) {
+				respondWithError(w, http.StatusConflict, "You are already in a room!", nil)
+				return
+			}
+		}
+	}
 	
 	for _, player := range room.Players {
 		if string(player.ID) == user.ID {
@@ -68,6 +78,11 @@ func (cfg *apiConfig) handleStartRoomAction(w http.ResponseWriter, r *http.Reque
 	cfg.games[g.ID] = g
 	room.Started = true
 	room.GameID = g.ID
+
+	fmt.Println("LIVE GAMES:")
+	for id, state := range cfg.games {
+		fmt.Println(id, state.ID)
+	}
 
 	respondWithJSON(w, http.StatusOK, struct{ GameID string `json:"game_id"` }{GameID: g.ID})
 }
