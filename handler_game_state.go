@@ -2,8 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/Kasjank/skitgubbe/internal/game"
 )
@@ -62,5 +64,13 @@ func (cfg *apiConfig) handlerGameMove(w http.ResponseWriter, r *http.Request) {
 	}
 
 	view := game.VisibleStateFor(gameState, game.PlayerID(user.ID))
+
+	if gameState.Finished {
+		time.AfterFunc(15 * time.Second, func() { delete(cfg.games, gameState.ID) })
+		fmt.Printf("GAME %v DELETED\n", gameState.ID)
+		respondWithError(w, http.StatusNotFound, "Could not find game", nil)
+		return
+	}
+
 	respondWithJSON(w, http.StatusOK, view)
 }

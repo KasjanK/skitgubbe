@@ -59,7 +59,7 @@ func main() {
 	)
 	
 	//TODO:
-	// - end game properly, remove game after ending, redirect players after.
+	// - end game properly, remove game after ending, redirect to dashboard after
 	// - add ready function
 	// - leave button
 	// - only show start button for owner of room
