@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"slices"
 	"strings"
 
 	"github.com/Kasjank/skitgubbe/internal/database"
@@ -30,6 +31,8 @@ func (cfg *apiConfig) handlerRoomsPost(w http.ResponseWriter, r *http.Request) {
 		cfg.handleJoinRoomAction(w, r, user, roomID)
 	case "start":
 		cfg.handleStartRoomAction(w, r, user, roomID)
+	case "leave":
+		cfg.handleLeaveRoomAction(w, r, user, roomID)
 	default:
 		respondWithError(w, http.StatusNotFound, "unknown rooms action", nil)
 	}
@@ -86,3 +89,34 @@ func (cfg *apiConfig) handleStartRoomAction(w http.ResponseWriter, r *http.Reque
 
 	respondWithJSON(w, http.StatusOK, struct{ GameID string `json:"game_id"` }{GameID: g.ID})
 }
+
+func (cfg *apiConfig) handleLeaveRoomAction(w http.ResponseWriter, r *http.Request, user *database.User, roomID string) {
+	room, ok := cfg.rooms[roomID]
+	if !ok {
+		respondWithError(w, http.StatusNotFound, "room not found", nil)
+		return
+	}
+
+	found := false
+    for i, player := range room.Players {
+        if player.ID == game.PlayerID(user.ID) {
+            room.Players = slices.Delete(room.Players, i, i + 1)
+            fmt.Printf("%v LEFT FROM ROOM %v\n", user.ID, roomID)
+            found = true
+            break
+        }
+    }
+
+	if !found {
+        respondWithError(w, http.StatusBadRequest, "You are not in this room", nil)
+        return
+    }
+
+	if len(room.Players) == 0 {
+        delete(cfg.rooms, roomID)
+		fmt.Printf("ROOM %v DELETED, NO PLAYERS\n", roomID)
+    }
+
+	respondWithJSON(w, http.StatusOK, struct{ ID string `json:"id"` }{ID: room.ID})
+}
+

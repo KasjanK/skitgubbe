@@ -88,8 +88,10 @@ body {
                 <label>Room ID: <span id="room-id"></span></label>
                 <button class="btn btn-gold" id="copy-btn" title="Copy room link">COPY LINK</button>
                 <button class="btn btn-gold" id="start-game">START GAME</button>
+                <button class="btn btn-gold" id="leave-btn" title="Leave Room">LEAVE</button>
             </div>
         </div>
+        <script src="/static/js/common.js"></script>
         <script>
     const roomId = "{{ .RoomID }}";
     const currentUserId = "{{ .UserID }}";
@@ -133,6 +135,17 @@ body {
             window.location = '/game/' + encodeURIComponent(room.game_id);
         }
     }
+
+    async function leaveRoom() {
+        try {
+            await API.post(`/api/rooms/${roomId}/leave`, {});
+            window.location.href = '/dashboard';
+        } catch (e) {
+            console.log('could not leave room', e)
+        }
+    }
+
+    document.getElementById('leave-btn').addEventListener('click', leaveRoom);
 
     document.getElementById('start-game').addEventListener('click', async () => {
         const res = await fetch(

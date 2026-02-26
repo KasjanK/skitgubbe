@@ -59,9 +59,8 @@ func main() {
 	)
 	
 	//TODO:
-	// - end game properly, remove game after ending, redirect to dashboard after
 	// - add ready function
-	// - leave button
+	// - leave button for game
 	// - only show start button for owner of room
 	// - add player info in room
 	// - player with lowest card starts
