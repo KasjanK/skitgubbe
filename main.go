@@ -59,6 +59,7 @@ func main() {
 	)
 	
 	//TODO:
+	// - reassign owner when owner leaves
 	// - add ready function
 	// - leave button for game
 	// - only show start button for owner of room
@@ -75,6 +76,7 @@ func main() {
 	mux.HandleFunc("POST /api/rooms/", cfg.handlerRoomsPost)
 
 	mux.HandleFunc("POST /api/games/", cfg.handlerGameMove)
+	mux.HandleFunc("DELETE /api/games/", cfg.handlerLeaveGame)
 
 	mux.HandleFunc("GET /dashboard", cfg.handlerDashboard)
 	mux.HandleFunc("GET /login", cfg.handlerLoginPage)

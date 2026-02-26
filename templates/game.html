@@ -10,6 +10,7 @@
 </style>
 </head>
     <body>
+        <div class="btn btn-gold" id="leave-game-btn">LEAVE</div>
         <div class="game-container">
             <!-- GAME TABLE -->
             <div class="game-table">
@@ -72,5 +73,26 @@
         </div>
          <script src="/static/js/common.js"></script>
          <script src="/static/js/game.js"></script>
+         <script>
+             const gameID = window.location.pathname.split('/')[2];
+
+             document.getElementById('leave-game-btn').addEventListener('click', leaveGame);
+             async function leaveGame() {
+                 try {
+                     const res = await fetch(`/api/games/${gameID}/leave`, {
+                         method: 'DELETE',
+                         credentials: 'include' 
+                     });
+
+                     if (!res.ok) {
+                         throw new Error('Failed to leave game');
+                     }
+
+                     window.location.href = '/dashboard';
+                 } catch (e) {
+                     console.error('Could not leave room:', e);
+                 }
+             }
+         </script>
     </body>
 </html>
