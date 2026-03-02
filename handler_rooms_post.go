@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/Kasjank/skitgubbe/internal/database"
 	"github.com/Kasjank/skitgubbe/internal/game"
@@ -87,6 +88,14 @@ func (cfg *apiConfig) handleStartRoomAction(w http.ResponseWriter, r *http.Reque
 		fmt.Println(id, state.ID)
 	}
 
+	if room.Started {
+		time.AfterFunc(15 * time.Second, func() { delete(cfg.rooms, room.ID) })
+	}
+
+	fmt.Println("LIVE ROOMS:")
+	for id, room := range cfg.rooms {
+		fmt.Println(id, room.ID)
+	}
 	respondWithJSON(w, http.StatusOK, struct{ GameID string `json:"game_id"` }{GameID: g.ID})
 }
 
