@@ -67,7 +67,7 @@ func NewGame(players []PlayerState) *GameState {
 	game := &GameState{
 		ID:            gameID.String(),
 		Players:       players,
-		CurrentPlayer: players[rand.Intn(len(players))].ID,
+		CurrentPlayer: "",
 		Deck:          remainingDeck,
 		Pile:          nil,
 		Phase:         PhaseSetup,
@@ -480,8 +480,34 @@ func applyReadySetup(gs *GameState, player *PlayerState) error {
 	}
 
 	if allReady {
+		var found bool
+		var lowestCard Card
+		var lowestPlayer int
+
+		for i, player := range gs.Players {
+			for _, card := range player.Hand {
+				if !found {
+					lowestCard = card
+					lowestPlayer = i
+					found = true
+					continue
+				}
+
+				if card.Rank > 2 && (card.Rank < lowestCard.Rank ||
+				(card.Rank == lowestCard.Rank && card.Suit == SuitHearts && lowestCard.Suit != SuitHearts)) {
+					lowestCard = card
+					lowestPlayer = i
+				}
+			}
+		}
+
+		if found {
+			gs.CurrentPlayer = gs.Players[lowestPlayer].ID
+			fmt.Printf("PLAYER %v HAS THE LOWEST CARD. THE CARD IS: %v.\n", gs.CurrentPlayer, lowestCard)
+		}
 		gs.Phase = PhasePlay
 	}
+
 	return nil
 }
 

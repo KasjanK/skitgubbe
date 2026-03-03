@@ -60,11 +60,10 @@ func main() {
 	
 	//TODO:
 	// - reassign owner when owner leaves
-	// - delete room when game ends
 	// - add ready function
 	// - only show start button for owner of room
 	// - add player info in room
-	// - player with lowest card starts
+	// - if player is in game, redirect from dashboard to game
 
 	//BUGS: 
 
