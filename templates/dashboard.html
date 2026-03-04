@@ -1,104 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SKITGUBBE — Dashboard</title>
-  <link rel="stylesheet" href="/static/css/dashboard.css"/>
-  <link rel="stylesheet" href="/static/css/style.css"/>
-<style>
-</style>
-  <body>
-      <div class="header">
-          <div class="logo">♠ SKITGUBBE</div>
-          <button class="btn btn-red" id="logout-btn">LOGOUT</button>
-      </div>
-      <div class="center-wrap">
-    <div class="panel action-panel">
-      <div class="section-label">Host a Game</div>
-      <div class="pixel-divider"></div>
-      <div id="create-error" class="error-msg"></div>
-      <button class="btn btn-gold" id="create-btn" style="width:100%; text-align:center;">
-        ▶ CREATE ROOM
-      </button>
-    </div>
-    <div class="panel action-panel">
-      <div class="section-label">Join a Game</div>
-      <div class="pixel-divider"></div>
-      <div class="join-row">
-        <input
-          id="room-id"
-          class="input-field"
-          type="text"
-          placeholder="Enter room id..."
-          autocomplete="off"
-          spellcheck="false"
-        />
-        <button class="btn btn-green" id="join-btn">▶ JOIN</button>
-      </div>
-      <div id="join-error" class="error-msg"></div>
-    </div>
-  </div>
-<script src="/static/js/common.js"></script>
-<script>
-    document.getElementById('create-btn').addEventListener('click', async (e) => {
-        const btn = document.getElementById('create-btn');
-        const err = document.getElementById('create-error');
-        err.style.display = 'none';
-        btn.disabled = true;
-        btn.textContent = 'CREATING...';
-        try {
-            const room = await API.post('/api/rooms', {});
-            window.location.href = `/room/${room.id}`;
-        } catch (e) {
-            err.textContent = e.message || 'Failed to create room';
-            err.style.display = 'block';
-            btn.disabled = false;
-            btn.textContent = '▶ CREATE ROOM';
-        }
-    });
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>SKITGUBBE — Dashboard</title>
+        <link rel="stylesheet" href="/static/css/dashboard.css"/>
+        <link rel="stylesheet" href="/static/css/style.css"/>
+        <style>
+        </style>
+        <body>
+            <div class="header">
+                <div class="logo">♠ SKITGUBBE</div>
+                <button class="btn btn-red" id="logout-btn">LOGOUT</button>
+            </div>
+            <div class="center-wrap">
+                <div class="panel action-panel">
+                    <div class="section-label">Host a Game</div>
+                    <div class="pixel-divider"></div>
+                    <div id="create-error" class="error-msg"></div>
+                    <button class="btn btn-gold" id="create-btn" style="width:100%; text-align:center;">
+                        ▶ CREATE ROOM
+                    </button>
+                </div>
+                <div class="panel action-panel">
+                    <div class="section-label">Join a Game</div>
+                    <div class="pixel-divider"></div>
+                    <div class="join-row">
+                        <input
+                        id="room-id"
+                        class="input-field"
+                        type="text"
+                        placeholder="Enter room id..."
+                        autocomplete="off"
+                        spellcheck="false"
+                        />
+                        <button class="btn btn-green" id="join-btn">▶ JOIN</button>
+                    </div>
+                    <div id="join-error" class="error-msg"></div>
+                </div>
+            </div>
+            <script src="/static/js/common.js"></script>
+            <script>
+                document.getElementById('create-btn').addEventListener('click', async (e) => {
+                    const btn = document.getElementById('create-btn');
+                    const err = document.getElementById('create-error');
+                    err.style.display = 'none';
+                    btn.disabled = true;
+                    btn.textContent = 'CREATING...';
+                    try {
+                        const room = await API.post('/api/rooms', {});
+                        window.location.href = `/room/${room.id}`;
+                    } catch (e) {
+                        err.textContent = e.message || 'Failed to create room';
+                        err.style.display = 'block';
+                        btn.disabled = false;
+                        btn.textContent = '▶ CREATE ROOM';
+                    }
+                });
 
-    async function joinRoom() {
-        const input  = document.getElementById('room-id');
-        const btn    = document.getElementById('join-btn');
-        const err    = document.getElementById('join-error');
-        const roomId = input.value.trim();
+                async function joinRoom() {
+                    const input  = document.getElementById('room-id');
+                    const btn    = document.getElementById('join-btn');
+                    const err    = document.getElementById('join-error');
+                    const roomId = input.value.trim();
 
-        if (!roomId) {
-            err.textContent = 'Enter a Room ID first';
-            err.style.display = 'block';
-            return;
-        }
+                    if (!roomId) {
+                        err.textContent = 'Enter a Room ID first';
+                        err.style.display = 'block';
+                        return;
+                    }
 
-        err.style.display = 'none';
-        btn.disabled = true;
-        btn.textContent = '▶ JOINING...';
+                    err.style.display = 'none';
+                    btn.disabled = true;
+                    btn.textContent = '▶ JOINING...';
 
-        try {
-            await API.post(`/api/rooms/${roomId}/join`, {});
-            window.location.href = `/room/${roomId}`;
-        } catch (e) {
-            err.textContent = e.message || 'Room not found';
-            err.style.display = 'block';
-            btn.disabled = false;
-            btn.textContent = "JOIN"
-        }
-    }
+                    try {
+                        await API.post(`/api/rooms/${roomId}/join`, {});
+                        window.location.href = `/room/${roomId}`;
+                    } catch (e) {
+                        err.textContent = e.message || 'Room not found';
+                        err.style.display = 'block';
+                        btn.disabled = false;
+                        btn.textContent = "JOIN"
+                    }
+                }
 
-    document.getElementById('join-btn').addEventListener('click', joinRoom);
-    document.getElementById('room-id').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') joinRoom();
-    });
+                document.getElementById('join-btn').addEventListener('click', joinRoom);
+                document.getElementById('room-id').addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') joinRoom();
+                });
 
-    document.getElementById('logout-btn').addEventListener('click', async (e) => {
-        try {
-            await API.post('/api/logout', {});
-            window.location.href = '/login';
-        } catch (e) {
-            console.log("Could not sign out")
-        }
-    });
-</script>
-</body>
+                document.getElementById('logout-btn').addEventListener('click', async (e) => {
+                    try {
+                        await API.post('/api/logout', {});
+                        window.location.href = '/login';
+                    } catch (e) {
+                        console.log("Could not sign out")
+                    }
+                });
+            </script>
+        </body>
 </html>
 

@@ -5,74 +5,12 @@
         <title>Game Room</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="stylesheet" href="/static/css/style.css" />
-        <style>
-
-body {
-    min-height: 100vh;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-}
-
-    .lobby-grid {
-        display: grid;
-        grid-template-columns: 1fr 320px;
-        gap: 24px;
-        max-width: 900px;
-        margin: 0 auto;
-    }
-    @media (max-width: 680px) { .lobby-grid { grid-template-columns: 1fr; } }
-
-    .action-btns { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
-    .action-btns .btn { flex: 1; min-width: 120px; text-align: center; }
-
-    .phase-banner {
-        font-family: 'Press Start 2P', monospace;
-        font-size: 10px;
-        text-align: center;
-        padding: 10px;
-        border: 3px solid #000;
-        margin-bottom: 20px;
-        letter-spacing: 2px;
-    }
-    .phase-banner.setup   { background: #1a3a5a; color: #7dd3f0; }
-    .phase-banner.waiting { background: #3a2a00; color: var(--gold); }
-    .phase-banner.playing { background: var(--green); color: var(--cream); }
-
-    .copy-btn {
-        font-family: 'Press Start 2P', monospace;
-        font-size: 8px;
-        background: var(--green-dark);
-        border: 2px solid #3a6b4a;
-        color: #3a6b4a;
-        padding: 4px 8px;
-        cursor: pointer;
-        vertical-align: middle;
-        margin-left: 8px;
-    }
-    .copy-btn:hover { color: var(--gold); border-color: var(--gold); }
-
-    .start-hint {
-        font-size: 15px;
-        color: #3a6b4a;
-        text-align: center;
-        margin-top: 10px;
-        line-height: 1.7;
-    }
-
-    .selected-count {
-        font-family: 'Press Start 2P', monospace;
-        font-size: 8px;
-        color: var(--gold);
-        margin-left: 12px;
-    }
-        </style>
+        <link rel="stylesheet" href="/static/css/room.css" />
     </head>
     <body>
         <div class="header">
             <div class="logo">♠ SKITGUBBE</div>
         </div>
-
         <div class="lobby-grid">
             <div>
                 <div class="panel">
@@ -93,78 +31,74 @@ body {
         </div>
         <script src="/static/js/common.js"></script>
         <script>
-    const roomId = "{{ .RoomID }}";
-    const currentUserId = "{{ .UserID }}";
+            const roomId = "{{ .RoomID }}";
+            const currentUserId = "{{ .UserID }}";
 
-    document.getElementById('copy-btn').addEventListener('click', () => {
-        navigator.clipboard.writeText(roomId).then(() => {
-            console.log('Room ID copied:', roomId);
-        });
-    });
+            document.getElementById('copy-btn').addEventListener('click', () => {
+                navigator.clipboard.writeText(roomId).then(() => {
+                    console.log('Room ID copied:', roomId);
+                });
+            });
 
-    document.getElementById('room-id').innerHTML = roomId;
+            document.getElementById('room-id').innerHTML = roomId;
 
-    async function refreshRoom() {
-        const res = await fetch('/api/rooms/' + encodeURIComponent(roomId));
-        if (!res.ok) return;
+            async function refreshRoom() {
+                const res = await fetch('/api/rooms/' + encodeURIComponent(roomId));
+                if (!res.ok) return;
 
-        const room = await res.json();
+                const room = await res.json();
 
-        const playersCount = document.getElementById('players-count').textContent = room.players.length;
+                const playersCount = document.getElementById('players-count').textContent = room.players.length;
 
-        // render players
-        const ul = document.getElementById('player-list');
-        ul.innerHTML = '';
-        room.players.forEach(p => {
-            const li = document.createElement('label');
-            li.textContent = p.id; 
-            
-            ul.appendChild(li);
-        });
+                const ul = document.getElementById('player-list');
+                ul.innerHTML = '';
+                room.players.forEach(p => {
+                    const li = document.createElement('label');
+                    li.textContent = p.id; 
 
-        // host-only start button
-        const startBtn = document.getElementById('start-game');
-        if (room.owner_id === currentUserId && !room.started) {
-            startBtn.disabled = false;
-        } else {
-            startBtn.disabled = true;
-        }
+                    ul.appendChild(li);
+                });
 
-        // if game already started, redirect everyone
-        if (room.started && room.game_id) {
-            window.location = '/game/' + encodeURIComponent(room.game_id);
-        }
-    }
+                const startBtn = document.getElementById('start-game');
+                if (room.owner_id === currentUserId && !room.started) {
+                    startBtn.disabled = false;
+                } else {
+                    startBtn.disabled = true;
+                }
 
-    async function leaveRoom() {
-        try {
-            await API.post(`/api/rooms/${roomId}/leave`, {});
-            window.location.href = '/dashboard';
-        } catch (e) {
-            console.log('could not leave room', e)
-        }
-    }
+                if (room.started && room.game_id) {
+                    window.location = '/game/' + encodeURIComponent(room.game_id);
+                }
+            }
 
-    document.getElementById('leave-btn').addEventListener('click', leaveRoom);
+            async function leaveRoom() {
+                try {
+                    await API.post(`/api/rooms/${roomId}/leave`, {});
+                    window.location.href = '/dashboard';
+                } catch (e) {
+                    console.log('could not leave room', e)
+                }
+            }
 
-    document.getElementById('start-game').addEventListener('click', async () => {
-        const res = await fetch(
-            '/api/rooms/' + encodeURIComponent(roomId) + '/start',
-            { method: 'POST' }
-        );
+            document.getElementById('leave-btn').addEventListener('click', leaveRoom);
 
-        if (!res.ok) {
-            alert('Failed to start game');
-            return;
-        }
+            document.getElementById('start-game').addEventListener('click', async () => {
+                const res = await fetch(
+                    '/api/rooms/' + encodeURIComponent(roomId) + '/start',
+                    { method: 'POST' }
+                );
 
-        const data = await res.json();
-        window.location = '/game/' + encodeURIComponent(data.game_id);
-    });
+                if (!res.ok) {
+                    alert('Failed to start game');
+                    return;
+                }
 
-    // initial load + polling so joiners see updates and redirect
-    refreshRoom();
-    setInterval(refreshRoom, 2000);
-</script>
-</body>
+                const data = await res.json();
+                window.location = '/game/' + encodeURIComponent(data.game_id);
+            });
+
+            refreshRoom();
+            setInterval(refreshRoom, 2000);
+        </script>
+    </body>
 </html>

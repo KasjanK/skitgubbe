@@ -1,73 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SKITGUBBE — Signup</title>
-  <link rel="stylesheet" href="/static/css/login.css"/>
-  <link rel="stylesheet" href="/static/css/style.css"/>
-</head>
-<body>
-  <div class="login-wrap">
-    <div class="game-title">SKITGUBBE</div>
-    <div class="game-subtitle">♠ CREATE ACCOUNT ♥</div>
-
-    <div class="card-deco">
-      <div class="deco-card">♥</div>
-      <div class="deco-card">♠</div>
-      <div class="deco-card">♦</div>
-      <div class="deco-card">♣</div>
-    </div>
-
-    <div class="panel">
-      <div class="section-label">New Player</div>
-      <div class="pixel-divider"></div>
-
-      <form id="login-form">
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input id="email" name="email" class="input-field" type="text" placeholder="Email" autocomplete="email" required/>
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>SKITGUBBE — Signup</title>
+        <link rel="stylesheet" href="/static/css/login.css"/>
+        <link rel="stylesheet" href="/static/css/style.css"/>
+    </head>
+    <body>
+        <div class="login-wrap">
+            <div class="game-title">SKITGUBBE</div>
+            <div class="game-subtitle">♠ CREATE ACCOUNT ♥</div>
+            <div class="card-deco">
+                <div class="deco-card">♥</div>
+                <div class="deco-card">♠</div>
+                <div class="deco-card">♦</div>
+                <div class="deco-card">♣</div>
+            </div>
+            <div class="panel">
+                <div class="section-label">New Player</div>
+                <div class="pixel-divider"></div>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input id="email" name="email" class="input-field" type="text" placeholder="Email" autocomplete="email" required/>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input id="password" name="password" class="input-field" type="password" placeholder="••••••••" autocomplete="current-password" required/>
+                    </div>
+                    <div id="error-msg" class="error-msg"></div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-gold" id="submit-btn">▶ CREATE ACCOUNT</button>
+                    </div>
+                </form>
+                <div class="switch-link">Already have an account? <a href="/login">LOG IN</a></div>
+            </div>
         </div>
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input id="password" name="password" class="input-field" type="password" placeholder="••••••••" autocomplete="current-password" required/>
-        </div>
+        <script src="/static/js/common.js"></script>
+        <script>
+            const form      = document.getElementById('login-form');
+            const errEl     = document.getElementById('error-msg');
+            const submitBtn = document.getElementById('submit-btn');
 
-        <div id="error-msg" class="error-msg"></div>
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                errEl.style.display = 'none';
+                submitBtn.disabled = true;
+                submitBtn.textContent = '⏳ CREATING...';
 
-        <div class="form-actions">
-          <button type="submit" class="btn btn-gold" id="submit-btn">▶ CREATE ACCOUNT</button>
-        </div>
-      </form>
-    <div class="switch-link">Already have an account? <a href="/login">LOG IN</a></div>
-    </div>
-  </div>
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
 
-  <script src="/static/js/common.js"></script>
-  <script>
-    const form      = document.getElementById('login-form');
-    const errEl     = document.getElementById('error-msg');
-    const submitBtn = document.getElementById('submit-btn');
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      errEl.style.display = 'none';
-      submitBtn.disabled = true;
-      submitBtn.textContent = '⏳ CREATING...';
-
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-
-      try {
-        await API.post('/api/signup', { email, password });
-        window.location.href = '/login';
-      } catch (err) {
-        errEl.textContent = err.message || 'Signup failed. Try again.';
-        errEl.style.display = 'block';
-        submitBtn.disabled = false;
-        submitBtn.textContent = '▶ CREATE ACCOUNT';
-      }
-    });
-  </script>
-</body>
+                try {
+                    await API.post('/api/signup', { email, password });
+                    window.location.href = '/login';
+                } catch (err) {
+                    errEl.textContent = err.message || 'Signup failed. Try again.';
+                    errEl.style.display = 'block';
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '▶ CREATE ACCOUNT';
+                }
+            });
+        </script>
+    </body>
 </html>

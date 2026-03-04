@@ -1,23 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SKITGUBBE — Game</title>
-  <link rel="stylesheet" href="/static/css/style.css"/>
-  <link rel="stylesheet" href="/static/css/game.css"/>
-<style>
-</style>
-</head>
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>SKITGUBBE — Game</title>
+        <link rel="stylesheet" href="/static/css/style.css"/>
+        <link rel="stylesheet" href="/static/css/game.css"/>
+        <style>
+        </style>
+    </head>
     <body>
         <div class="btn btn-gold" id="leave-game-btn">LEAVE</div>
         <div class="game-container">
-            <!-- GAME TABLE -->
             <div class="game-table">
-                <!-- Opponents positioned around table -->
                 <div id="other-hands"></div>
-
-                <!-- Center: deck + pile -->
                 <div class="center-area">
                     <div>
                         <div id="deck-area"></div>
@@ -40,59 +36,51 @@
                     </div>
 
                     <div class="card-divider"></div>
-
-                    <!-- Face-up table -->
                     <div class="card-zone">
                         <div class="zone-label">FACE UP</div>
                         <div class="zone-cards" id="your-faceup"></div>
                     </div>
-
                     <div class="card-divider"></div>
-
-                    <!-- Face-down table -->
                     <div class="card-zone">
                         <div class="zone-label">FACE DOWN</div>
                         <div class="zone-cards" id="your-facedown"></div>
                     </div>
                 </div>
-
-                <!-- ACTION BUTTONS -->
                 <div id="action-buttons"></div>
             </div>
         </div>
-
         <div id="winner-overlay">
             <div class="winner-panel panel">
                 <div id="winner-title">🏆 GAME OVER</div>
                 <div class="pixel-divider"></div>
                 <div id="winner-list"></div>
                 <div class="winner-actions">
-                    <a href="/dashboard" class="btn btn-gold">▶ NEW GAME</a>
+                    <a href="/dashboard" class="btn btn-gold">▶ DASHBOARD</a>
                 </div>
             </div>
         </div>
-         <script src="/static/js/common.js"></script>
-         <script src="/static/js/game.js"></script>
-         <script>
-             const gameID = window.location.pathname.split('/')[2];
+        <script src="/static/js/common.js"></script>
+        <script src="/static/js/game.js"></script>
+        <script>
+            const gameID = window.location.pathname.split('/')[2];
 
-             document.getElementById('leave-game-btn').addEventListener('click', leaveGame);
-             async function leaveGame() {
-                 try {
-                     const res = await fetch(`/api/games/${gameID}/leave`, {
-                         method: 'DELETE',
-                         credentials: 'include' 
-                     });
+            document.getElementById('leave-game-btn').addEventListener('click', leaveGame);
+            async function leaveGame() {
+                try {
+                    const res = await fetch(`/api/games/${gameID}/leave`, {
+                        method: 'DELETE',
+                        credentials: 'include' 
+                    });
 
-                     if (!res.ok) {
-                         throw new Error('Failed to leave game');
-                     }
+                    if (!res.ok) {
+                        throw new Error('Failed to leave game');
+                    }
 
-                     window.location.href = '/dashboard';
-                 } catch (e) {
-                     console.error('Could not leave room:', e);
-                 }
-             }
-         </script>
+                    window.location.href = '/dashboard';
+                } catch (e) {
+                    console.error('Could not leave room:', e);
+                }
+            }
+        </script>
     </body>
 </html>

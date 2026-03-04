@@ -1,126 +1,59 @@
-* {
-  box-sizing: border-box;
-  font-family: system-ui, sans-serif;
-}
-
 body {
-  margin: 0;
-  min-height: 100vh;
-  background: radial-gradient(circle at top, #1f2937, #020617);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
 }
 
-.room-container {
-  background: #111827;
-  width: 100%;
-  max-width: 520px;
-  padding: 2rem;
-  border-radius: 16px;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+.lobby-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+@media (max-width: 680px) { .lobby-grid { grid-template-columns: 1fr; } }
+
+.action-btns { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+.action-btns .btn { flex: 1; min-width: 120px; text-align: center; }
+
+.phase-banner {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    text-align: center;
+    padding: 10px;
+    border: 3px solid #000;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+}
+.phase-banner.setup   { background: #1a3a5a; color: #7dd3f0; }
+.phase-banner.waiting { background: #3a2a00; color: var(--gold); }
+.phase-banner.playing { background: var(--green); color: var(--cream); }
+
+.copy-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    background: var(--green-dark);
+    border: 2px solid #3a6b4a;
+    color: #3a6b4a;
+    padding: 4px 8px;
+    cursor: pointer;
+    vertical-align: middle;
+    margin-left: 8px;
+}
+.copy-btn:hover { color: var(--gold); border-color: var(--gold); }
+
+.start-hint {
+    font-size: 15px;
+    color: #3a6b4a;
+    text-align: center;
+    margin-top: 10px;
+    line-height: 1.7;
 }
 
-/* Header */
-.room-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.room-header h1 {
-  font-size: 1.4rem;
-}
-
-.room-id {
-  font-size: 0.85rem;
-  color: #9ca3af;
-}
-
-/* Players */
-.players h2 {
-  font-size: 1.1rem;
-  margin-bottom: 0.75rem;
-}
-
-.player-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-
-.player {
-  background: #1f2937;
-  padding: 0.75rem 1rem;
-  border-radius: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.player.host {
-  border: 1px solid #4f46e5;
-}
-
-.name {
-  font-weight: 500;
-}
-
-/* Status */
-.status {
-  font-size: 0.8rem;
-  padding: 0.25rem 0.6rem;
-  border-radius: 999px;
-  font-weight: 500;
-}
-
-.status.ready {
-  background: #065f46;
-  color: #d1fae5;
-}
-
-.status.not-ready {
-  background: #7f1d1d;
-  color: #fee2e2;
-}
-
-/* Actions */
-.actions {
-  margin-top: 2rem;
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-button {
-  flex: 1;
-  padding: 0.75rem;
-  border-radius: 10px;
-  border: none;
-  background: #374151;
-  color: white;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
-}
-
-button:hover {
-  background: #4b5563;
-}
-
-button:active {
-  transform: scale(0.97);
-}
-
-button.primary {
-  background: #4f46e5;
-}
-
-button.primary:hover {
-  background: #4338ca;
+.selected-count {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: var(--gold);
+    margin-left: 12px;
 }
