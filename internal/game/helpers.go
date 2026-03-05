@@ -91,11 +91,11 @@ func NewGame(players []PlayerState) *GameState {
 	return game
 }
 
-func NewRoom(ownerID PlayerID) *Room {
+func NewRoom(ownerID PlayerID, username string) *Room {
 	roomID := uuid.New()
 
 	players := []PlayerState{
-		{ID: ownerID},
+		{ Username: username, ID: ownerID },
 	}
 
 	room := &Room{
@@ -120,6 +120,7 @@ func VisibleStateFor(gs *GameState, viewer PlayerID) VisibleState {
 		} else {
 			others = append(others, VisiblePlayer{
 				ID:                     player.ID,
+				Username: 				player.Username,
 				HandSize:               len(player.Hand),
 				FacedownTableCardsSize: len(player.FacedownTableCards),
 				OthersFaceupTableCards: player.FaceupTableCards,

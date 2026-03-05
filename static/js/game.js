@@ -288,13 +288,12 @@ function renderOthers() {
         const div = document.createElement('div');
         div.className = `player-area ${posClass}`;
 
-        // Name badge
         const badge = document.createElement('div');
         badge.className = `player-name-badge ${isCurrent ? 'active' : 'inactive'}`;
-        badge.textContent = `${isCurrent ? '▶ ' : ''}${p.id}`;
+        badge.textContent = `${isCurrent ? '▶ ' : ''}${p.username}`;
+        console.log(p.username);
         div.appendChild(badge);
 
-        // Hand row (separate, on top)
         if (p.hand_size > 0) {
             const handRow = document.createElement('div');
             handRow.className = 'opp-hand-row';
@@ -305,7 +304,6 @@ function renderOthers() {
             div.appendChild(handRow);
         }
 
-        // Table row - 3 stacks (faceup on top of facedown)
         const tableRow = document.createElement('div');
         tableRow.className = 'opp-table-row';
 
@@ -316,13 +314,11 @@ function renderOthers() {
             const stack = document.createElement('div');
             stack.className = 'opp-table-stack';
 
-            // Facedown card (bottom layer) - just a generic card back, no value
             if (j < facedownCount) {
                 const fd = buildCardEl({ rank: 0, suit: 0 }, { facedown: true, disabled: true });
                 stack.appendChild(fd);
             }
 
-            // Faceup card (top layer)
             if (j < faceupCards.length) {
                 const fu = buildCardEl(faceupCards[j], { disabled: true });
                 stack.appendChild(fu);
@@ -342,7 +338,7 @@ function renderYourArea() {
     const isMyTurn = state.current_player === you.id;
     const phase = state.phase;
 
-    qs('#your-name-label').textContent = you.id;
+    qs('#your-name-label').textContent = you.username;
 
     renderYourHand(you, isMyTurn, phase);
     renderYourTable(you, isMyTurn, phase);

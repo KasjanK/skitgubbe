@@ -62,7 +62,7 @@ func (cfg *apiConfig) handleJoinRoomAction(w http.ResponseWriter, r *http.Reques
 		}
 	}
 
-	room.Players = append(room.Players, game.PlayerState{ID: game.PlayerID(user.ID)})
+	room.Players = append(room.Players, game.PlayerState{ Username: user.Username, ID: game.PlayerID(user.ID)})
 	respondWithJSON(w, http.StatusOK, struct{ ID string `json:"id"` }{ID: room.ID})
 }
 

@@ -64,6 +64,7 @@ const (
 
 type PlayerState struct {
 	ID 	               PlayerID `json:"id"`
+	Username 		   string   `json:"username"`
 	Hand               []Card   `json:"hand"`
 	FaceupTableCards   []Card	`json:"faceup_table_cards"` 
 	FacedownTableCards []Card   `json:"facedown_table_cards"`
@@ -92,6 +93,7 @@ type Room struct {
 
 type VisiblePlayer struct {
 	ID 		               PlayerID `json:"id"`
+	Username 			   string 	`json:"username"`
 	HandSize 			   int 	    `json:"hand_size"`
 	FacedownTableCardsSize int      `json:"facedown_table_cards_size"`
 	OthersFaceupTableCards []Card   `json:"others_faceup_table_cards"` 

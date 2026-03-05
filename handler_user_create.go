@@ -12,6 +12,7 @@ import (
 )
 
 type User struct {
+	Username  string 	`json:"username"`
 	ID 		  string 	`json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -20,6 +21,7 @@ type User struct {
 
 func (cfg *apiConfig) handlerSignup(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
+		Username string `json:"username"`
 		Email 	 string `json:"email"`
 		Password string `json:"password"`
 	}
@@ -44,6 +46,7 @@ func (cfg *apiConfig) handlerSignup(w http.ResponseWriter, r *http.Request) {
 
 	userID := uuid.New()
 	user, err := cfg.db.CreateUser(context.Background(), database.CreateUserParams{
+		Username: params.Username,
 		ID: userID.String(),
 		Email: params.Email,
 		HashedPassword: string(hashedPassword),
@@ -55,6 +58,7 @@ func (cfg *apiConfig) handlerSignup(w http.ResponseWriter, r *http.Request) {
 
 	respondWithJSON(w, http.StatusCreated, response{
 		User: User{
+			Username:  user.Username,
 			ID: 	   user.ID,
 			CreatedAt: user.CreatedAt,
 			UpdatedAt: user.UpdatedAt,

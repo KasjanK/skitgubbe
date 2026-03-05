@@ -26,7 +26,7 @@ func (cfg *apiConfig) handlerCreateRoom(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 	
-	room := game.NewRoom(game.PlayerID(user.ID))
+	room := game.NewRoom(game.PlayerID(user.ID), user.Username)
 
 	cfg.rooms[room.ID] = room	
 

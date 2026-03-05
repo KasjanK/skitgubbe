@@ -12,7 +12,7 @@ import (
 
 func (cfg apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
-		Email 	 string `json:"email"`
+		Username string	`json:"username"` 
 		Password string `json:"password"`
 	}
 
@@ -28,7 +28,7 @@ func (cfg apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 		return 
 	}
 
-	user, err := cfg.db.GetUserByEmail(r.Context(), params.Email)
+	user, err := cfg.db.GetUserByUsername(r.Context(), params.Username)
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, "Invalid email or password", err)
 		return
@@ -53,7 +53,8 @@ func (cfg apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 
 	respondWithJSON(w, http.StatusOK, response{
 		User: User{
-			ID: 	user.ID,
+			Username:  user.Username,
+			ID: 	   user.ID,
 			CreatedAt: user.CreatedAt,
 			UpdatedAt: user.UpdatedAt,
 			Email: 	   user.Email,
