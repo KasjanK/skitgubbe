@@ -30,13 +30,13 @@ func (cfg apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 
 	user, err := cfg.db.GetUserByUsername(r.Context(), params.Username)
 	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, "Invalid email or password", err)
+		respondWithError(w, http.StatusUnauthorized, "Invalid username or password", err)
 		return
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(params.Password))
 	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, "Invalid email or password", err)
+		respondWithError(w, http.StatusUnauthorized, "Invalid username or password", err)
 		return
 	}
 
@@ -57,7 +57,6 @@ func (cfg apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 			ID: 	   user.ID,
 			CreatedAt: user.CreatedAt,
 			UpdatedAt: user.UpdatedAt,
-			Email: 	   user.Email,
 		},
 	})
 }

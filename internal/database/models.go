@@ -13,6 +13,5 @@ type User struct {
 	ID             string
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
-	Email          string
 	HashedPassword string
 }

@@ -26,10 +26,6 @@
                         <input id="username" name="username" class="input-field" type="text" placeholder="Username" autocomplete="username" required/>
                     </div>
                     <div class="form-group">
-                        <label for="email">Email</label>
-                        <input id="email" name="email" class="input-field" type="text" placeholder="Email" autocomplete="email" required/>
-                    </div>
-                    <div class="form-group">
                         <label for="password">Password</label>
                         <input id="password" name="password" class="input-field" type="password" placeholder="••••••••" autocomplete="current-password" required/>
                     </div>
@@ -53,11 +49,10 @@
                 submitBtn.disabled = true;
                 submitBtn.textContent = '⏳ CREATING...';
                 const username = document.getElementById('username').value;
-                const email = document.getElementById('email').value;
                 const password = document.getElementById('password').value;
 
                 try {
-                    await API.post('/api/signup', { username, email, password });
+                    await API.post('/api/signup', { username, password });
                     window.location.href = '/login';
                 } catch (err) {
                     errEl.textContent = err.message || 'Signup failed. Try again.';

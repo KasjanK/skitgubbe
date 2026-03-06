@@ -16,13 +16,11 @@ type User struct {
 	ID 		  string 	`json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-	Email 	  string	`json:"email"`
 }
 
 func (cfg *apiConfig) handlerSignup(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Username string `json:"username"`
-		Email 	 string `json:"email"`
 		Password string `json:"password"`
 	}
 
@@ -48,7 +46,6 @@ func (cfg *apiConfig) handlerSignup(w http.ResponseWriter, r *http.Request) {
 	user, err := cfg.db.CreateUser(context.Background(), database.CreateUserParams{
 		Username: params.Username,
 		ID: userID.String(),
-		Email: params.Email,
 		HashedPassword: string(hashedPassword),
 	})
 	if err != nil {
@@ -62,7 +59,6 @@ func (cfg *apiConfig) handlerSignup(w http.ResponseWriter, r *http.Request) {
 			ID: 	   user.ID,
 			CreatedAt: user.CreatedAt,
 			UpdatedAt: user.UpdatedAt,
-			Email: params.Email,
 		},
 	})
 }

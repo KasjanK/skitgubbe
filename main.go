@@ -60,10 +60,11 @@ func main() {
 	
 	//TODO:
 	// - reassign owner when owner leaves
-	// - add ready function
+	// - remove ready function
 	// - only show start button for owner of room
 	// - add player info in room
 	// - if player is in game, redirect from dashboard to game
+	// - remove email from singup
 
 	//BUGS: 
 
