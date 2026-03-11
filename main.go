@@ -2,7 +2,9 @@ package main
 
 import (
 	"database/sql"
+	"embed"
 	"html/template"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -11,6 +13,7 @@ import (
 	"github.com/Kasjank/skitgubbe/internal/game"
 	"github.com/joho/godotenv"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/pressly/goose/v3"
 )
 
 type apiConfig struct {
@@ -20,6 +23,14 @@ type apiConfig struct {
 	templates template.Template
 	rooms 	  map[string]*game.Room      // roomID    -> room
 }
+//go:embed templates/*.html
+var templateFS embed.FS
+
+//go:embed static/* 
+var staticFS embed.FS
+
+//go:embed sql/schema/*.sql
+var migrationFS embed.FS
 
 func main() {
 	const filepathRoot = "."
@@ -39,7 +50,24 @@ func main() {
 
 	dbQueries := database.New(db)
 
-	template := template.Must(template.ParseGlob("templates/*.html"))
+	template, err := template.ParseFS(templateFS, "templates/*.html")
+	if err != nil {
+		panic(err)
+	}
+
+	if err := goose.SetDialect("sqlite3"); err != nil {
+   		panic(err)
+	}
+
+    subFS, err := fs.Sub(migrationFS, "sql/schema")
+    if err != nil {
+        panic(err)
+    }
+
+	goose.SetBaseFS(subFS)
+    if err := goose.Up(db, "."); err != nil {
+        panic(err)
+    }
 
 	cfg := &apiConfig{
 		db:	       dbQueries,
@@ -50,21 +78,26 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
-	mux.Handle("/", http.FileServer(http.Dir(filepathRoot)))
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			http.NotFound(w, r)
+			return
+		}
 
-	mux.Handle("/static/",
-		http.StripPrefix("/static/",
-		http.FileServer(http.Dir("static")),
-		),
-	)
+		err := template.ExecuteTemplate(w, "index.html", nil)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	})
+
+	mux.Handle("/static/", http.FileServer(http.FS(staticFS)))
 	
 	//TODO:
-	// - reassign owner when owner leaves
+	// - reassign owner when owner leave
 	// - remove ready function
 	// - only show start button for owner of room
 	// - add player info in room
 	// - if player is in game, redirect from dashboard to game
-	// - remove email from singup
 
 	//BUGS: 
 
