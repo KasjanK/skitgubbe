@@ -11,7 +11,7 @@ I created this project so me and my friends can play it together. When I started
 - Host a game of skitgubbe and invite your friends using a generated code
 - Play the game
 
-## Quick start
+## Quick Start
 1. Navigate to [skitgubbe.dev.fly](https://skitgubbe.fly.dev/) and create an account.
 2. Invite your friends ant start playing! 
 
