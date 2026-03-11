@@ -12,7 +12,19 @@ I created this project so me and my friends can play it together. When I started
 - Play the game
 
 ## Quick start
-### 1. Navigate to [skitgubbe.dev.fly](https://skitgubbe.fly.dev/) and create an account.
-### 2. Invite your friends ant start playing! 
+1. Navigate to [skitgubbe.dev.fly](https://skitgubbe.fly.dev/) and create an account.
+2. Invite your friends ant start playing! 
 
+## Usage
+If you want to host it yourself and make it better, this section is for you.
 
+Environment variables to set: 
+- "DB_PATH" - path to the database file
+
+To build and start the server:
+``` go build -o out && ./out ```
+
+The server is setup at port 8080, but you can changeit to whatever you want. Navigate to:
+[localhost:8080](localhost:8080)
+
+## Contributing
