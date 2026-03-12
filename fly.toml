@@ -12,7 +12,7 @@ primary_region = 'arn'
 
 [env]
   PORT = '8080'
-  DB_PATH="./skitgubbe.db"
+  DB_PATH="/data/skitgubbe.db"
 
 [http_service]
   internal_port = 8080
@@ -27,3 +27,7 @@ primary_region = 'arn'
   cpu_kind = 'shared'
   cpus = 1
   memory_mb = 1024
+
+[mounts]
+  source = "skitgubbe_data"
+  destination = "/data"
