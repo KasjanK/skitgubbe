@@ -115,6 +115,9 @@ func main() {
 	mux.HandleFunc("GET /login", cfg.handlerLoginPage)
 	mux.HandleFunc("GET /signup", cfg.handlerSignupPage)
 
+	mux.HandleFunc("GET /profile/", cfg.handlerProfilePage)
+	mux.HandleFunc("GET /api/profile/", cfg.handlerProfile)
+
 	mux.HandleFunc("GET /game/", cfg.handlerGamePage)
 	mux.HandleFunc("GET /api/games/", cfg.handlerGameState)
 

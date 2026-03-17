@@ -12,6 +12,7 @@
             <div class="header">
                 <div class="logo">♠ SKITGUBBE</div>
                 <button class="btn btn-red" id="logout-btn">LOGOUT</button>
+                <button class="btn btn-red" id="profile-btn">PROFILE</button>
             </div>
             <div class="center-wrap">
                 <div class="panel action-panel">
@@ -93,11 +94,19 @@
                 document.getElementById('logout-btn').addEventListener('click', async (e) => {
                     try {
                         await API.post('/api/logout', {});
+                        localStorage.removeItem('username');
                         window.location.href = '/login';
                     } catch (e) {
                         console.log("Could not sign out")
                     }
                 });
+
+                document.getElementById('profile-btn').addEventListener('click', async (e) => {
+                    const username = localStorage.getItem('username');
+                    if (username) {
+                        window.location.href = `/profile/${username}`
+                    }
+                })
             </script>
         </body>
 </html>

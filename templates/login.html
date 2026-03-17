@@ -54,6 +54,7 @@
 
                 try {
                     await API.post('/api/login', { username, password });
+                    localStorage.setItem('username', username);
                     window.location.href = '/dashboard';
                 } catch (err) {
                     errEl.textContent = err.message || 'Login failed. Try again.';

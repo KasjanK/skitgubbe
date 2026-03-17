@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>SKITGUBBE — Profile</title>
+        <link rel="stylesheet" href="/static/css/style.css"/>
+        <link rel="stylesheet" href="/static/css/profile.css"/>
+        <body>
+            <div class="header">
+                <div class="logo">♠ SKITGUBBE</div>
+                <button class="btn btn-red" id="logout-btn">LOGOUT</button>
+            </div>
+            <div id="profile-content" style="display:none;">
+                <div class="profile-container">
+                    <div id ="loading" class="loading">LOADING PROFILE</div>
+                    <div class="player-panel" id="player-panel">
+                        <div class="player-info">
+                            <div class="player-name" id="player-name"></div>
+                            <div class="player-since" id="player-since"></div>
+                        </div>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="panel">
+                            <div class="section-label">GAMES PLAYED</div>
+                            <div class="stat-value" id="stat-games">—</div>
+                            <label><span id="stat-wins">0</span> wins / <span id="stat-losses">0</span> losses</label>
+                        </div>
+                        <div class="panel">
+                            <div class="section-label">WIN RATE</div>
+                            <div class="stat-value large" id="stat-winrate">—%</div>
+                        </div>
+                        <div class="panel">
+                            <div class="section-label">BEST STREAK</div>
+                            <div class="stat-value" id="stat-streak">—</div>
+                            <label>Consecutive wins</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script src="/static/js/common.js"></script>
+            <script>
+                const playerName = window.location.pathname.split('/')[2];
+                console.log(playerName);
+                async function loadProfile() {
+                    try {
+                        const profile = await API.get(`/api/profile/${encodeURIComponent(playerName)}`);
+                        renderProfile(profile);
+                    } catch (e) {
+                        console.error('Failed to load profile:', e);
+                        document.getElementById('loading').innerHTML = 
+                            `<span style="color:var(--red);">Failed to load profile</span><br/><br/><a href="/dashboard" class="btn btn-green">Go Back</a>`;
+                    }
+                }
+
+                function renderProfile(profile) {
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('profile-content').style.display = 'block';
+
+                    document.getElementById('player-name').textContent = profile.username || playerName;
+                    document.getElementById('player-since').textContent = 
+                        profile.member_since ? `Member since: ${new Date(profile.member_since).toLocaleDateString()}` : 'Member since: Unknown';
+                }
+                loadProfile()
+            </script>
+        </body>
+</html>

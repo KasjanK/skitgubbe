@@ -1,0 +1,81 @@
+.profile-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+body {
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.player-panel {
+    background: var(--white);
+    border: 3px solid #000;
+    box-shadow: var(--pixel-shadow);
+    padding: 32px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    flex-wrap: wrap;
+}
+
+.player-info {
+    flex: 1;
+    min-width: 200px;
+}
+
+.player-name {
+    font-family: 'Special Elite', monospace;
+    font-size: 32px;
+    color: var(--black);
+    margin-bottom: 8px;
+    word-break: break-word;
+}
+
+.player-since {
+    font-size: 15px;
+    color: #3a6b4a;
+    font-family: 'Special Elite', monospace;
+}
+
+.loading {
+    text-align: center;
+    padding: 60px 20px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: var(--gold);
+    letter-spacing: 2px;
+}
+
+.loading::after {
+    content: '...';
+    animation: loadingDots 1.5s infinite;
+}
+
+@keyframes loadingDots {
+    0%, 20% { content: '.'; }
+    40% { content: '..'; }
+    60%, 100% { content: '...'; }
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 28px;
+}
+
+.stat-value {
+    font-family: 'Special Elite', monospace;
+    font-size: 36px;
+    color: var(--gold);
+    line-height: 1;
+}
+
+.stat-value.large {
+    font-size: 42px;
+}
