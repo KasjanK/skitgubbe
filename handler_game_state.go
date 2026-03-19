@@ -1,11 +1,13 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/Kasjank/skitgubbe/internal/database"
 	"github.com/Kasjank/skitgubbe/internal/game"
 )
 
@@ -65,8 +67,32 @@ func (cfg *apiConfig) handlerGameMove(w http.ResponseWriter, r *http.Request) {
 	view := game.VisibleStateFor(gameState, game.PlayerID(user.ID))
 
 	if gameState.Finished {
+		err := cfg.db.CreateGame(r.Context(), database.CreateGameParams{
+			ID: gameState.ID, 
+			StartedAt: time.Now(), 
+			GameMode: sql.NullString{
+				String: "private",
+				Valid:  true,  
+			},
+		})
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, "Could not insert game into db", err)
+			return
+		}
+
+		for placement, playerID := range gameState.Winners {
+			err = cfg.db.AddGameParticipant(r.Context(), database.AddGameParticipantParams{
+				GameID: gameState.ID, 
+				UserID: string(playerID),
+				Placement: int64(placement + 1),
+			})
+			if err != nil {
+				respondWithError(w, http.StatusInternalServerError, "Could not insert participant", err)
+				return
+			}
+		}
 		time.AfterFunc(15 * time.Second, func() { delete(cfg.games, gameState.ID) })
-		respondWithError(w, http.StatusNotFound, "Could not find game", nil)
+		respondWithJSON(w, http.StatusOK, struct{}{})
 		return
 	}
 

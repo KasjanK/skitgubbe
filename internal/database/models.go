@@ -5,8 +5,21 @@
 package database
 
 import (
+	"database/sql"
 	"time"
 )
+
+type Game struct {
+	ID        string
+	StartedAt time.Time
+	GameMode  sql.NullString
+}
+
+type GameParticipant struct {
+	GameID    string
+	UserID    string
+	Placement int64
+}
 
 type User struct {
 	Username       string
