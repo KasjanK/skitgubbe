@@ -28,3 +28,10 @@ type User struct {
 	UpdatedAt      time.Time
 	HashedPassword string
 }
+
+type UserStat struct {
+	UserID     string
+	TotalGames int64
+	Wins       int64
+	Losses     int64
+}

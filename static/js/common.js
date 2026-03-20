@@ -1,5 +1,3 @@
-// ─── API ───────────────────────────────────────────────────────────────────
-
 const API = {
   async post(url, body) {
     const res = await fetch(url, {
@@ -27,8 +25,6 @@ const API = {
     return text ? JSON.parse(text) : null;
   },
 };
-
-// ─── TOAST ─────────────────────────────────────────────────────────────────
 
 function ensureToastContainer() {
   let c = document.getElementById('toast-container');
@@ -95,15 +91,12 @@ function buildCardEl(card, opts = {}) {
     el.addEventListener('click', () => opts.onClick(card, el));
   }
 
-  // card key for identity
   el.dataset.rank = card.rank;
   el.dataset.suit = card.suit;
   return el;
 }
 
 function cardKey(card) { return `${card.rank}-${card.suit}`; }
-
-// ─── POLLING ───────────────────────────────────────────────────────────────
 
 class Poller {
   constructor(fn, interval = 2000) {
@@ -129,10 +122,9 @@ class Poller {
   }
 }
 
-// ─── MISC ──────────────────────────────────────────────────────────────────
-
 function roomIdFromPath()  { return window.location.pathname.split('/room/')[1]?.split('/')[0]; }
 function gameIdFromPath()  { return window.location.pathname.split('/game/')[1]?.split('/')[0]; }
 
 function qs(sel, root = document) { return root.querySelector(sel); }
 function qsa(sel, root = document) { return [...root.querySelectorAll(sel)]; }
+

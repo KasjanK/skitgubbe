@@ -36,6 +36,11 @@
                             <label>Consecutive wins</label>
                         </div>
                     </div>
+                    <div class="match-history-section">
+                        <div class="section-label">Match History</div>
+                        <div class="pixel-divider" style="margin-bottom:20px;"></div>
+                        <div class="match-list" id="match-list"></div>
+                    </div>
                 </div>
             </div>
             <script src="/static/js/common.js"></script>
@@ -53,6 +58,16 @@
                     }
                 }
 
+                document.getElementById('logout-btn').addEventListener('click', async (e) => {
+                    try {
+                        await API.post('/api/logout', {});
+                        localStorage.removeItem('username');
+                        window.location.href = '/login';
+                    } catch (e) {
+                        console.log("Could not sign out")
+                    }
+                });
+
                 function renderProfile(profile) {
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('profile-content').style.display = 'block';
@@ -60,7 +75,58 @@
                     document.getElementById('player-name').textContent = profile.username || playerName;
                     document.getElementById('player-since').textContent = 
                         profile.member_since ? `Member since: ${new Date(profile.member_since).toLocaleDateString()}` : 'Member since: Unknown';
+
+                    document.getElementById('stat-winrate').textContent = `${profile.winrate}%`;
+                    document.getElementById('stat-games').textContent = profile.total_games;
+                    document.getElementById('stat-wins').textContent = profile.wins || 0;
+                    document.getElementById('stat-losses').textContent = profile.losses || 0;
+
+
+                    renderMatchHistory(profile.game_history || []);
                 }
+
+                function renderMatchHistory(matches) {
+                    const listEl = document.getElementById('match-list');
+                    listEl.innerHTML = '';
+
+                    if (!matches.length) {
+                        listEl.innerHTML = '<div class="no-matches">No matches played yet.</div>';
+                        return;
+                    }
+
+                    matches.forEach(match => {
+                        const item = document.createElement('div');
+                        item.className = 'match-item';
+
+                        const isWin = match.placement === 1;
+                        const resultEl = document.createElement('div');
+                        resultEl.className = `match-result ${isWin ? 'win' : 'loss'}`;
+                        resultEl.textContent = isWin ? 'WIN' : 'LOSS';
+
+                        const infoEl = document.createElement('div');
+                        infoEl.className = 'match-info';
+                        infoEl.innerHTML = `
+                            <div class="match-placement">${getPlacementText(match.placement)} Place</div>
+                            `;
+
+                        const dateEl = document.createElement('div');
+                        dateEl.className = 'match-date';
+                        dateEl.textContent = `${new Date(match.started_at).toLocaleDateString()}`;
+
+                        item.appendChild(resultEl);
+                        item.appendChild(infoEl);
+                        item.appendChild(dateEl);
+                        listEl.appendChild(item);
+                    });
+                }
+
+                function getPlacementText(place) {
+                    if (place === 1) return '1st';
+                    if (place === 2) return '2nd';
+                    if (place === 3) return '3rd';
+                    return place + 'th';
+                }
+
                 loadProfile()
             </script>
         </body>

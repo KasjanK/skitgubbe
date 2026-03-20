@@ -53,6 +53,12 @@ func (cfg *apiConfig) handlerSignup(w http.ResponseWriter, r *http.Request) {
 		return 
 	}
 
+	err = cfg.db.CreateUserStats(r.Context(), userID.String())
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Could not create user stats", err)
+		return
+	}
+
 	respondWithJSON(w, http.StatusCreated, response{
 		User: User{
 			Username:  user.Username,
