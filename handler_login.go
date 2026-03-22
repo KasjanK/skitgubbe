@@ -41,13 +41,17 @@ func (cfg apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sessionID := uuid.New()
+	cfg.mu.Lock()
 	cfg.sessions[sessionID.String()] = user.ID
+	cfg.mu.Unlock()
 
 	http.SetCookie(w, &http.Cookie{
 		Name: 	"session_id",
 		Value:  sessionID.String(),
 		Path:   "/",
 		HttpOnly: true,
+		Secure: true,
+		SameSite: http.SameSiteLaxMode,
 		MaxAge: 86400 * 7,
 	})
 

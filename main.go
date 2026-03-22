@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 
 	"github.com/Kasjank/skitgubbe/internal/database"
 	"github.com/Kasjank/skitgubbe/internal/game"
@@ -18,6 +19,7 @@ import (
 
 type apiConfig struct {
 	db 	      *database.Queries
+	mu 		  sync.RWMutex
 	sessions  map[string]string  		 // sessionID -> userID
 	games     map[string]*game.GameState // gameID    -> gamestate
 	templates template.Template
@@ -95,11 +97,12 @@ func main() {
 	//TODO:
 	// - reassign owner when owner leave
 	// - remove ready function
-	// - only show start button for owner of room
 	// - add player info in room
 	// - if player is in game, redirect from dashboard to game
+	// - clockwise turn advancing 
 
 	//BUGS: 
+	// - sometimes skips turn when playing 10 or 2
 
 	mux.HandleFunc("POST /api/login", cfg.handlerLogin)
 	mux.HandleFunc("POST /api/signup", cfg.handlerSignup)
