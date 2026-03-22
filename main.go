@@ -93,7 +93,6 @@ func main() {
 	mux.Handle("/static/", http.FileServer(http.FS(staticFS)))
 	
 	//TODO:
-	// - GET PLACE IN MATCH HISTORY
 	// - reassign owner when owner leave
 	// - remove ready function
 	// - only show start button for owner of room

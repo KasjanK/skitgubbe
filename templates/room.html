@@ -22,7 +22,6 @@
                 <div class="section-label">Room Info</div>
                 <label>Status: Waiting for host...</label>
                 <label>Players: <span id="players-count"></span> / 4</label>
-                <label>Ready   0 / 4</label>
                 <label>Room ID: <span id="room-id"></span></label>
                 <button class="btn btn-gold" id="copy-btn" title="Copy room link">COPY LINK</button>
                 <button class="btn btn-gold" id="start-game">START GAME</button>
@@ -60,10 +59,8 @@
                 });
 
                 const startBtn = document.getElementById('start-game');
-                if (room.owner_id === currentUserId && !room.started) {
-                    startBtn.disabled = false;
-                } else {
-                    startBtn.disabled = true;
+                if (room.owner_id !== currentUserId && !room.started) {
+                    startBtn.style.display = "none";
                 }
 
                 if (room.started && room.game_id) {
@@ -81,6 +78,7 @@
             }
 
             document.getElementById('leave-btn').addEventListener('click', leaveRoom);
+
 
             document.getElementById('start-game').addEventListener('click', async () => {
                 const res = await fetch(
