@@ -25,11 +25,12 @@ func (cfg *apiConfig) handlerRoomsPost(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusNotFound, "bad rooms path", nil)
 		return
 	}
+
 	roomID, action := parts[0], parts[1]
 
 	switch action {
 	case "join":
-		cfg.handleJoinRoomAction(w, r, user, roomID)
+		cfg.handleJoinRoomAction(w, user, roomID)
 	case "start":
 		cfg.handleStartRoomAction(w, r, user, roomID)
 	case "leave":
@@ -39,31 +40,43 @@ func (cfg *apiConfig) handlerRoomsPost(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (cfg *apiConfig) handleJoinRoomAction(w http.ResponseWriter, r *http.Request, user *database.User, roomID string) {
+func (cfg *apiConfig) JoinRoom(roomID, userID, username string) error {
+	cfg.mu.Lock()
+	defer cfg.mu.Unlock()
+
 	room, ok := cfg.rooms[roomID]
-	if !ok {
-		respondWithError(w, http.StatusNotFound, "room not found", nil)
-		return
+	if !ok { 
+		return fmt.Errorf("room not found") 
 	}
 
 	for _, rm := range cfg.rooms {
-		for _, player := range rm.Players {
-			if player.ID == game.PlayerID(user.ID) {
-				respondWithError(w, http.StatusConflict, "You are already in a room!", nil)
-				return
+        for _, p := range rm.Players {
+            if string(p.ID) == userID { 
+				return fmt.Errorf("already in room") 
 			}
-		}
-	}
-	
-	for _, player := range room.Players {
-		if string(player.ID) == user.ID {
-			respondWithJSON(w, http.StatusOK, struct{ ID string `json:"id"` }{ID: room.ID})
+        }
+    }
+
+	room.Players = append(room.Players, game.PlayerState{ Username: username, ID: game.PlayerID(userID)})
+	return nil
+}
+
+func (cfg *apiConfig) handleJoinRoomAction(w http.ResponseWriter, user *database.User, roomID string) {
+	err := cfg.JoinRoom(roomID, user.ID, user.Username)
+	if err != nil {
+		if err.Error() == "room not found" {
+			respondWithError(w, http.StatusNotFound, "Room not found", nil)
 			return
 		}
+		if err.Error() == "already in room" {
+			respondWithError(w, http.StatusConflict, "You are already in a room", nil)
+			return
+		}
+		respondWithError(w, http.StatusInternalServerError, "Internal error", nil)
+        return
 	}
 
-	room.Players = append(room.Players, game.PlayerState{ Username: user.Username, ID: game.PlayerID(user.ID)})
-	respondWithJSON(w, http.StatusOK, struct{ ID string `json:"id"` }{ID: room.ID})
+	respondWithJSON(w, http.StatusOK, struct{ ID string `json:"id"` }{ID: roomID})
 }
 
 func (cfg *apiConfig) handleStartRoomAction(w http.ResponseWriter, r *http.Request, user *database.User, roomID string) {
