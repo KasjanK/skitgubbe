@@ -8,6 +8,26 @@ import (
 	"github.com/Kasjank/skitgubbe/internal/game"
 )
 
+func (cfg *apiConfig) CreateRoom(userID game.PlayerID, username string) (*game.Room, error) {
+	cfg.mu.Lock()
+	defer cfg.mu.Unlock()
+
+	if len(cfg.rooms) > 0 {
+		for _, rm := range cfg.rooms {
+			for _, player := range rm.Players {
+				if player.ID == game.PlayerID(userID) {
+					return nil, fmt.Errorf("already in room")
+				}
+			}
+		}
+	}
+	
+	room := game.NewRoom(userID, username)
+
+	cfg.rooms[room.ID] = room
+	return room, nil
+}
+
 func (cfg *apiConfig) handlerCreateRoom(w http.ResponseWriter, r *http.Request) {
 	user, err := cfg.currentUser(r)
 	if err != nil {
@@ -15,20 +35,15 @@ func (cfg *apiConfig) handlerCreateRoom(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if len(cfg.rooms) > 0 {
-		for _, rm := range cfg.rooms {
-			for _, player := range rm.Players {
-				if player.ID == game.PlayerID(user.ID) {
-					respondWithError(w, http.StatusConflict, "You are already in a room!", nil)
-					return
-				}
-			}
+	room, err := cfg.CreateRoom(game.PlayerID(user.ID), user.Username)
+	if err != nil {
+		if err.Error() == "already in room" {
+			respondWithError(w, http.StatusConflict, "You are already in a room", err)
+			return
 		}
+		respondWithError(w, http.StatusInternalServerError, "Internal error", err)
+		return
 	}
-	
-	room := game.NewRoom(game.PlayerID(user.ID), user.Username)
-
-	cfg.rooms[room.ID] = room	
 
 	fmt.Println(cfg.rooms)
 
