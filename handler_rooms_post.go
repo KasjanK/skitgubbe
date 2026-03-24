@@ -32,21 +32,36 @@ func (cfg *apiConfig) handlerRoomsPost(w http.ResponseWriter, r *http.Request) {
 	case "join":
 		cfg.handleJoinRoomAction(w, user, roomID)
 	case "start":
-		cfg.handleStartRoomAction(w, r, user, roomID)
+		cfg.handleStartRoomAction(w, roomID)
 	case "leave":
-		cfg.handleLeaveRoomAction(w, r, user, roomID)
+		cfg.handleLeaveRoomAction(w, user, roomID)
 	default:
 		respondWithError(w, http.StatusNotFound, "unknown rooms action", nil)
 	}
+}
+
+func (cfg *apiConfig) getRoom(roomID string) (*game.Room, error) {
+	room, ok := cfg.rooms[roomID]
+	if !ok {
+		return nil, fmt.Errorf("room not found")
+	}
+
+	return room, nil
+}
+
+func (cfg *apiConfig) GetRoom(roomID string) (*game.Room, error) {
+    cfg.mu.RLock()
+    defer cfg.mu.RUnlock()
+    return cfg.getRoom(roomID) 
 }
 
 func (cfg *apiConfig) JoinRoom(roomID, userID, username string) error {
 	cfg.mu.Lock()
 	defer cfg.mu.Unlock()
 
-	room, ok := cfg.rooms[roomID]
-	if !ok { 
-		return fmt.Errorf("room not found") 
+	room, err := cfg.getRoom(roomID)
+	if err != nil {
+		return err
 	}
 
 	for _, rm := range cfg.rooms {
@@ -79,16 +94,13 @@ func (cfg *apiConfig) handleJoinRoomAction(w http.ResponseWriter, user *database
 	respondWithJSON(w, http.StatusOK, struct{ ID string `json:"id"` }{ID: roomID})
 }
 
-func (cfg *apiConfig) handleStartRoomAction(w http.ResponseWriter, r *http.Request, user *database.User, roomID string) {
-	room, ok := cfg.rooms[roomID]
-	if !ok {
-		respondWithError(w, http.StatusNotFound, "room not found", nil)
-		return
-	}
+func (cfg *apiConfig) StartGame(roomID string) (*game.GameState, error) {
+	cfg.mu.Lock()
+	defer cfg.mu.Unlock()
 
-	if string(room.OwnerID) != user.ID {
-		respondWithError(w, http.StatusForbidden, "only host can start the match", nil)
-		return
+	room, err := cfg.getRoom(roomID)
+	if err != nil {
+		return nil, err
 	}
 
 	g := game.NewGame(room.Players)
@@ -101,22 +113,38 @@ func (cfg *apiConfig) handleStartRoomAction(w http.ResponseWriter, r *http.Reque
 		fmt.Println(id, state.ID)
 	}
 
-	if room.Started {
-		time.AfterFunc(15 * time.Second, func() { delete(cfg.rooms, room.ID) })
-	}
+	time.AfterFunc(15 * time.Second, func() {
+		cfg.mu.Lock()
+		delete(cfg.rooms, room.ID) 
+		cfg.mu.Unlock()
+	})
 
 	fmt.Println("LIVE ROOMS:")
 	for id, room := range cfg.rooms {
 		fmt.Println(id, room.ID)
 	}
+
+	return g, nil
+}
+
+
+func (cfg *apiConfig) handleStartRoomAction(w http.ResponseWriter, roomID string) {
+	g, err := cfg.StartGame(roomID)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Could not start game", err)
+		return
+	}
+
 	respondWithJSON(w, http.StatusOK, struct{ GameID string `json:"game_id"` }{GameID: g.ID})
 }
 
-func (cfg *apiConfig) handleLeaveRoomAction(w http.ResponseWriter, r *http.Request, user *database.User, roomID string) {
-	room, ok := cfg.rooms[roomID]
-	if !ok {
-		respondWithError(w, http.StatusNotFound, "room not found", nil)
-		return
+func (cfg *apiConfig) LeaveRoom(roomID string, user *database.User) error {
+	cfg.mu.Lock()
+	defer cfg.mu.Unlock()
+
+	room, err := cfg.getRoom(roomID)
+	if err != nil {
+		return err
 	}
 
 	found := false
@@ -130,8 +158,7 @@ func (cfg *apiConfig) handleLeaveRoomAction(w http.ResponseWriter, r *http.Reque
     }
 
 	if !found {
-        respondWithError(w, http.StatusBadRequest, "You are not in this room", nil)
-        return
+		return fmt.Errorf("You are not in this room")
     }
 
 	if len(room.Players) == 0 {
@@ -139,6 +166,15 @@ func (cfg *apiConfig) handleLeaveRoomAction(w http.ResponseWriter, r *http.Reque
 		fmt.Printf("ROOM %v DELETED, NO PLAYERS\n", roomID)
     }
 
-	respondWithJSON(w, http.StatusOK, struct{ ID string `json:"id"` }{ID: room.ID})
+	return nil
+}
+
+func (cfg *apiConfig) handleLeaveRoomAction(w http.ResponseWriter,  user *database.User, roomID string) {
+	err := cfg.LeaveRoom(roomID, user)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Could not leave room", err)
+		return
+	}
+	respondWithJSON(w, http.StatusOK, struct{ ID string `json:"id"` }{ID: roomID})
 }
 
