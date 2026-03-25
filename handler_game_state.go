@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -10,6 +11,20 @@ import (
 	"github.com/Kasjank/skitgubbe/internal/database"
 	"github.com/Kasjank/skitgubbe/internal/game"
 )
+
+func (cfg *apiConfig) getGame(gameID string) (*game.GameState, error) {
+    g, ok := cfg.games[gameID]
+    if !ok {
+        return nil, fmt.Errorf("game not found")
+    }
+    return g, nil
+}
+
+func (cfg *apiConfig) GetGame(id string) (*game.GameState, error) {
+    cfg.mu.RLock() 
+    defer cfg.mu.RUnlock()
+    return cfg.getGame(id)
+}
 
 func (cfg *apiConfig) handlerGameState(w http.ResponseWriter, r *http.Request) {
 	user, err := cfg.currentUser(r)
@@ -19,14 +34,39 @@ func (cfg *apiConfig) handlerGameState(w http.ResponseWriter, r *http.Request) {
 	}
 
 	gameID := strings.TrimPrefix(r.URL.Path, "/api/games/")	
-	gameState, ok := cfg.games[gameID]
-	if !ok {
-		respondWithError(w, http.StatusNotFound, "game not found", nil)
+
+	gameState, err := cfg.GetGame(gameID)
+	if err != nil {
+		respondWithError(w, http.StatusNotFound, "game not found", err)
 		return
 	}
 
 	view := game.VisibleStateFor(gameState, game.PlayerID(user.ID))
 	respondWithJSON(w, http.StatusOK, view)
+}
+
+func (cfg *apiConfig) SubmitMove(gameID, userID string, move game.Move) (*game.GameState, error) {
+    cfg.mu.Lock()
+    defer cfg.mu.Unlock()
+
+    gs, err := cfg.getGame(gameID)
+    if err != nil {
+        return nil, err
+    }
+
+    if err := game.ApplyMove(gs, game.PlayerID(userID), move); err != nil {
+        return nil, err
+    }
+
+    if gs.Finished {
+        time.AfterFunc(15*time.Second, func() {
+            cfg.mu.Lock()
+            delete(cfg.games, gameID)
+            cfg.mu.Unlock()
+        })
+    }
+
+    return gs, nil
 }
 
 func (cfg *apiConfig) handlerGameMove(w http.ResponseWriter, r *http.Request) {
@@ -44,12 +84,6 @@ func (cfg *apiConfig) handlerGameMove(w http.ResponseWriter, r *http.Request) {
 	}
 	gameID := parts[0]
 
-	gameState, ok := cfg.games[gameID]
-	if !ok {
-		respondWithError(w, http.StatusNotFound, "game not found", nil)
-		return
-	}
-
 	var move game.Move
 	decoder := json.NewDecoder(r.Body)
 	err = decoder.Decode(&move)
@@ -58,17 +92,17 @@ func (cfg *apiConfig) handlerGameMove(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	err = game.ApplyMove(gameState, game.PlayerID(user.ID), move) 	
-	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "invalid move", err)
-		return
-	}
+	gs, err := cfg.SubmitMove(gameID, user.ID, move)
+    if err != nil {
+        respondWithError(w, http.StatusBadRequest, "invalid move", err)
+        return
+    }
 
-	view := game.VisibleStateFor(gameState, game.PlayerID(user.ID))
+	view := game.VisibleStateFor(gs, game.PlayerID(user.ID))
 
-	if gameState.Finished {
+	if gs.Finished {
 		err := cfg.db.CreateGame(r.Context(), database.CreateGameParams{
-			ID: gameState.ID, 
+			ID: gs.ID, 
 			StartedAt: time.Now(), 
 			GameMode: sql.NullString{
 				String: "private",
@@ -80,9 +114,9 @@ func (cfg *apiConfig) handlerGameMove(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		for placement, playerID := range gameState.Winners {
+		for placement, playerID := range gs.Winners {
 			err = cfg.db.AddGameParticipant(r.Context(), database.AddGameParticipantParams{
-				GameID: gameState.ID, 
+				GameID: gs.ID, 
 				UserID: string(playerID),
 				Placement: int64(placement + 1),
 			})
@@ -91,7 +125,6 @@ func (cfg *apiConfig) handlerGameMove(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-		time.AfterFunc(15 * time.Second, func() { delete(cfg.games, gameState.ID) })
 		respondWithJSON(w, http.StatusOK, struct{}{})
 		return
 	}

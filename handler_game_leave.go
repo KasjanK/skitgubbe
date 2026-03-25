@@ -5,9 +5,40 @@ import (
 	"net/http"
 	"slices"
 	"strings"
-
-	"github.com/Kasjank/skitgubbe/internal/game"
 )
+
+func (cfg *apiConfig) LeaveGame(gameID string, userID string) error {
+    cfg.mu.Lock()
+    defer cfg.mu.Unlock()
+
+    gs, err := cfg.getGame(gameID)
+    if err != nil {
+        return err
+    }
+
+    found := false
+    for i, p := range gs.Players {
+        if string(p.ID) == userID {
+            gs.Players = slices.Delete(gs.Players, i, i+1)
+			fmt.Printf("%v LEFT FROM GAME %v\n", gameID, gs.ID)
+			fmt.Printf("PLAYERS IN GAME: %v", len(gs.Players))
+            found = true
+            break
+        }
+    }
+
+    if !found {
+        return fmt.Errorf("you are not in this game")
+    }
+
+    if len(gs.Players) == 0 {
+        delete(cfg.games, gameID)
+		fmt.Printf("GAME %v DELETED, NO PLAYERS", gs.ID)
+		fmt.Printf("LIVE GAMES: %v\n", cfg.games)
+    }
+
+    return nil
+}
 
 func (cfg *apiConfig) handlerLeaveGame(w http.ResponseWriter, r *http.Request) {
 	user, err := cfg.currentUser(r)
@@ -16,7 +47,6 @@ func (cfg *apiConfig) handlerLeaveGame(w http.ResponseWriter, r *http.Request) {
         return
     }
 	
-	// URL like /api/games/{id}/leave
     path := strings.TrimPrefix(r.URL.Path, "/api/games/")
     parts := strings.SplitN(path, "/", 2)
     if len(parts) != 2 || parts[1] != "leave" {
@@ -25,28 +55,10 @@ func (cfg *apiConfig) handlerLeaveGame(w http.ResponseWriter, r *http.Request) {
     }
     gameID := parts[0]
 
-	gameState := cfg.games[gameID]
-
-	found := false
-    for i, player := range gameState.Players {
-        if player.ID == game.PlayerID(user.ID) {
-            gameState.Players = slices.Delete(gameState.Players, i, i + 1)
-            fmt.Printf("%v LEFT FROM GAME %v\n", user.ID, gameState.ID)
-			fmt.Printf("PLAYERS IN GAME: %v", len(gameState.Players))
-            found = true
-            break
-        }
-    }
-
-	if !found {
-        respondWithError(w, http.StatusBadRequest, "You are not in this game", nil)
-        return
-    }
-
-	if len(gameState.Players) == 0 {
-		delete(cfg.games, gameState.ID)
-		fmt.Printf("GAME %v DELETED, NO PLAYERS", gameState.ID)
-		fmt.Printf("LIVE GAMES: %v\n", cfg.games)
+	err = cfg.LeaveGame(gameID, user.ID)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Could not leave game", err)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)

@@ -95,6 +95,8 @@ func main() {
 	mux.Handle("/static/", http.FileServer(http.FS(staticFS)))
 	
 	//TODO:
+	// - CREATE GETTERS AND SETTERS FOR ROOMS AND GAMES
+	// - THREAD SAFETy ACROSS SITE
 	// - reassign owner when owner leave
 	// - remove ready function
 	// - add player info in room
@@ -104,14 +106,14 @@ func main() {
 	//BUGS: 
 	// - sometimes skips turn when playing 10 or 2
 
-	mux.HandleFunc("POST /api/login", cfg.handlerLogin)
+	mux.HandleFunc("POST /api/login", cfg.handlerLogin) 		// FIX
 	mux.HandleFunc("POST /api/signup", cfg.handlerSignup)
 	mux.HandleFunc("POST /api/logout", cfg.handlerLogout)
 
-	mux.HandleFunc("POST /api/rooms", cfg.handlerCreateRoom)
-	mux.HandleFunc("POST /api/rooms/", cfg.handlerRoomsPost)
+	mux.HandleFunc("POST /api/rooms", cfg.handlerCreateRoom)	
+	mux.HandleFunc("POST /api/rooms/", cfg.handlerRoomsPost) 	
 
-	mux.HandleFunc("POST /api/games/", cfg.handlerGameMove)
+	mux.HandleFunc("POST /api/games/", cfg.handlerGameMove)     // FIX
 	mux.HandleFunc("DELETE /api/games/", cfg.handlerLeaveGame)
 
 	mux.HandleFunc("GET /dashboard", cfg.handlerDashboard)

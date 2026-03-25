@@ -68,8 +68,8 @@ func (cfg *apiConfig) handlerRoomPage(w http.ResponseWriter, r *http.Request) {
 
 	roomID := strings.TrimPrefix(r.URL.Path, "/room/")	
 
-	room, ok := cfg.rooms[roomID]
-	if !ok {
+	room, err := cfg.GetRoom(roomID)
+	if err != nil {
 		respondWithError(w, http.StatusNotFound, "Could not find room", err)
 		return
 	}
@@ -106,8 +106,8 @@ func (cfg *apiConfig) handlerRoomState(w http.ResponseWriter, r *http.Request) {
 
 	roomID := strings.TrimPrefix(r.URL.Path, "/api/rooms/")	
 
-	room, ok := cfg.rooms[roomID]
-	if !ok {
+	room, err := cfg.GetRoom(roomID)
+	if err != nil {
 		respondWithError(w, http.StatusNotFound, "Could not find room", err)
 		return
 	}
@@ -119,6 +119,7 @@ func (cfg *apiConfig) handlerRoomState(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 	}
+
 	if !authorized {
 		respondWithError(w, http.StatusForbidden, "Forbidden", err)
 		return

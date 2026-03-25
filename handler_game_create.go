@@ -15,11 +15,11 @@ func (cfg *apiConfig) handlerGamePage(w http.ResponseWriter, r *http.Request) {
 
 	gameID := strings.TrimPrefix(r.URL.Path, "/game/")	
 
-	game, ok := cfg.games[gameID]
-	if !ok {
-		respondWithError(w, http.StatusNotFound, "Could not find game", err)
-		return
-	}
+	game, err := cfg.GetGame(gameID)
+    if err != nil {
+        respondWithError(w, http.StatusNotFound, "Could not find game", err)
+        return
+    }
 
 	authorized := false	
 	for _, player := range game.Players {

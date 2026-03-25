@@ -10,7 +10,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (cfg apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
+func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Username string	`json:"username"` 
 		Password string `json:"password"`
@@ -50,7 +50,7 @@ func (cfg apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 		Value:  sessionID.String(),
 		Path:   "/",
 		HttpOnly: true,
-		Secure: true,
+		//Secure: true,
 		SameSite: http.SameSiteLaxMode,
 		MaxAge: 86400 * 7,
 	})
@@ -89,6 +89,7 @@ func (cfg *apiConfig) handlerLoginPage(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 		return
 	}
+
 	if err := cfg.templates.ExecuteTemplate(w, "login.html", nil); err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Could not execute login template", err)
 		return

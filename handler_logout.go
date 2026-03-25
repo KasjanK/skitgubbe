@@ -8,8 +8,10 @@ func (cfg *apiConfig) handlerLogout(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
-
+	
+	cfg.mu.Lock()
 	delete(cfg.sessions, cookie.Value)
+	cfg.mu.Unlock()
 
 	http.SetCookie(w, &http.Cookie{
 		Name: 	"session_id",
