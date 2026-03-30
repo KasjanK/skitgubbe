@@ -110,6 +110,7 @@ type VisibleState struct {
 	Pile 		 []Card			 `json:"pile"`
 	DeckSize 	 int 		     `json:"deck_size"`
 	CurrentPlayer PlayerID		 `json:"current_player"`
+	TurnOrder    []PlayerID      `json:"turn_order"`
 }
 
 type MoveType string

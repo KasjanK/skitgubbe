@@ -278,12 +278,31 @@ function renderOthers() {
     const container = UI.others;
     container.innerHTML = '';
 
-    const others = state.others ?? [];
-    const POSITIONS = ['player-top', 'player-left', 'player-right'];
+    const others = state.turn_order ?? [];
+    if (!others.length) return;
 
-    others.forEach((p, i) => {
+    const youIndex = state.turn_order.indexOf(state.you.id);
+
+    const rotatedOrder = [
+        ...state.turn_order.slice(youIndex),
+        ...state.turn_order.slice(0, youIndex)
+    ];
+
+    const opponentIDs = rotatedOrder.slice(1);
+
+    const opponents = opponentIDs
+        .map(id => state.others.find(p => p.id === id))
+        .filter(Boolean);
+
+    const POSITIONS = [
+        'player-left',  
+        'player-top',    
+        'player-right'   
+    ];
+
+    opponents.forEach((p, i) => {
         const isCurrent = p.id === state.current_player;
-        const posClass = POSITIONS[i % 3];
+        const posClass = POSITIONS[i];
 
         const div = document.createElement('div');
         div.className = `player-area ${posClass}`;

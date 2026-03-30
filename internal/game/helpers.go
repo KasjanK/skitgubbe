@@ -113,8 +113,10 @@ func NewRoom(ownerID PlayerID, username string) *Room {
 func VisibleStateFor(gs *GameState, viewer PlayerID) VisibleState {
 	var you PlayerState
 	others := make([]VisiblePlayer, 0, len(gs.Players))
+	order := make([]PlayerID, 0, len(gs.Players))
 
 	for _, player := range gs.Players {
+		order = append(order, player.ID)
 		if player.ID == viewer {
 			you = player
 		} else {
@@ -138,6 +140,7 @@ func VisibleStateFor(gs *GameState, viewer PlayerID) VisibleState {
 		Pile:          gs.Pile,
 		DeckSize: 		   len(gs.Deck), 
 		CurrentPlayer: gs.CurrentPlayer,
+		TurnOrder: 	   order,
 	}
 }
 
