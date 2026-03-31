@@ -138,7 +138,7 @@ func (cfg *apiConfig) handleStartRoomAction(w http.ResponseWriter, roomID string
 	respondWithJSON(w, http.StatusOK, struct{ GameID string `json:"game_id"` }{GameID: g.ID})
 }
 
-func (cfg *apiConfig) LeaveRoom(roomID string, user *database.User) error {
+func (cfg *apiConfig) LeaveRoom(roomID string, userID string) error {
 	cfg.mu.Lock()
 	defer cfg.mu.Unlock()
 
@@ -149,9 +149,9 @@ func (cfg *apiConfig) LeaveRoom(roomID string, user *database.User) error {
 
 	found := false
     for i, player := range room.Players {
-        if player.ID == game.PlayerID(user.ID) {
+        if player.ID == game.PlayerID(userID) {
             room.Players = slices.Delete(room.Players, i, i + 1)
-            fmt.Printf("%v LEFT FROM ROOM %v\n", user.ID, roomID)
+            fmt.Printf("%v LEFT FROM ROOM %v\n", userID, roomID)
             found = true
             break
         }
@@ -170,7 +170,7 @@ func (cfg *apiConfig) LeaveRoom(roomID string, user *database.User) error {
 }
 
 func (cfg *apiConfig) handleLeaveRoomAction(w http.ResponseWriter,  user *database.User, roomID string) {
-	err := cfg.LeaveRoom(roomID, user)
+	err := cfg.LeaveRoom(roomID, user.ID)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Could not leave room", err)
 		return

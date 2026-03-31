@@ -102,7 +102,6 @@ func NewRoom(ownerID PlayerID, username string) *Room {
 		ID:      roomID.String(),
 		OwnerID: ownerID,
 		Players: players,
-		Ready:   make(map[PlayerID]bool),
 		Started: false,
 		GameID:  "",
 	}

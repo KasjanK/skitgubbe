@@ -86,7 +86,6 @@ type Room struct {
 	ID 	 	string            `json:"id"`
 	OwnerID PlayerID		  `json:"owner_id"`
 	Players []PlayerState     `json:"players"`
-	Ready   map[PlayerID]bool `json:"ready"`
 	Started bool              `json:"started"`
 	GameID string             `json:"game_id"`
 }
