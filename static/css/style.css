@@ -169,10 +169,12 @@ label, a.room-label {
 }
 
 a:link {
+    color: black;
     text-decoration: none;
 }
 
 a:hover {
+    color: black;
     text-decoration: none;
 }
 
