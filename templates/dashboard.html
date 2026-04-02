@@ -54,7 +54,7 @@
                         const room = await API.post('/api/rooms', {});
                         window.location.href = `/room/${room.id}`;
                     } catch (e) {
-                        err.textContent = e.message || 'Failed to create room';
+                        err.textContent = e.message || 'Failed to create room'; 
                         err.style.display = 'block';
                         btn.disabled = false;
                         btn.textContent = '▶ CREATE ROOM';

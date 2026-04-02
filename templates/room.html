@@ -52,8 +52,10 @@
                 const ul = document.getElementById('player-list');
                 ul.innerHTML = '';
                 room.players.forEach(p => {
-                    const li = document.createElement('label');
+                    const li = document.createElement('a');
                     li.textContent = p.username; 
+                    li.classList.add("room-label");
+                    li.href = "/profile/" + p.username;
 
                     ul.appendChild(li);
                 });

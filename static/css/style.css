@@ -160,12 +160,25 @@ html, body {
   width: 100%;
 }
 
-label {
+label, a.room-label {
     font-family: 'Press Start 2P', monospace;
     font-size: 14px;
     display: block;
     margin-bottom: 8px;
     letter-spacing: 1px;
+}
+
+a:link {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+a:visited {
+    text-decoration: none;
+    color: black;
 }
 
 .form-actions {
